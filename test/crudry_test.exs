@@ -115,4 +115,26 @@ defmodule CrudryTest do
     assert ContextDefault.create_test(%{x: 2}) == {:ok, %Test{x: 3}}
     assert ContextDefault.update_test(struct(Test), %{x: 2}) == {:ok, %Test{x: 4}}
   end
+
+  test "choose which CRUD functions are to be generated" do
+    defmodule ContextOnly do
+      alias CrudryTest.Repo
+
+      Crudry.create_functions CrudryTest.Test, only: [:create, :list]
+    end
+
+    assert ContextOnly.create_test(%{x: 2}) == {:ok, %Test{x: 2}}
+    assert Context.list_tests() == [1, 2, 3]
+    assert length(ContextOnly.__info__(:functions)) == 2
+
+    defmodule ContextExcept do
+      alias CrudryTest.Repo
+
+      Crudry.create_functions CrudryTest.Test, except: [:get!, :list, :delete]
+    end
+
+    assert ContextExcept.create_test(%{x: 2}) == {:ok, %Test{x: 2}}
+    assert ContextExcept.update_test(struct(Test), %{x: 2}) == {:ok, %Test{x: 2}}
+    assert length(ContextExcept.__info__(:functions)) == 3
+  end
 end
