@@ -3,30 +3,15 @@ defmodule Crudry do
   Crudry is a library for DRYing CRUD.
   """
 
-  # Isn't required, only used to update default changeset functions
-  # If it isn't needed, should it be a normal macro instead of __using__?
-  defmacro __using__(opts) do
+  defmacro default(opts) do
     Module.put_attribute(__CALLER__.module, :create_changeset, opts[:create])
     Module.put_attribute(__CALLER__.module, :update_changeset, opts[:update])
-
-    # This is for making it available at run-time. But is it needed?
-    quote bind_quoted: [opts: opts] do
-      @create_changeset opts[:create]
-      @update_changeset opts[:update]
-    end
+    Module.put_attribute(__CALLER__.module, :only, opts[:only])
+    Module.put_attribute(__CALLER__.module, :except, opts[:except])
   end
 
   defmacro create_functions(schema_module, opts \\ []) do
-    create_changeset = Module.get_attribute(__CALLER__.module, :create_changeset)
-    update_changeset = Module.get_attribute(__CALLER__.module, :update_changeset)
-
-    # Default changeset is defined in `use` or `changeset` if nothing is defined.
-    opts = Keyword.merge(
-      [create: create_changeset || :changeset,
-       update: update_changeset || :changeset,
-       only: [],
-       except: []],
-       opts)
+    opts = Keyword.merge(load_default(__CALLER__.module), opts)
 
     module = get_module(schema_module)
     name = get_module_name(module) |> String.downcase()
@@ -89,6 +74,20 @@ defmodule Crudry do
         end
       end
     end
+  end
+
+  defp load_default(module) do
+    create_changeset = Module.get_attribute(module, :create_changeset)
+    update_changeset = Module.get_attribute(module, :update_changeset)
+    only = Module.get_attribute(module, :only)
+    except = Module.get_attribute(module, :except)
+
+    [
+      create: create_changeset || :changeset,
+      update: update_changeset || :changeset,
+      only: only || [],
+      except: except || []
+    ]
   end
 
   # Transforms an AST representation like {:__aliases__, [alias: false], [:Module, :Submodule]}
