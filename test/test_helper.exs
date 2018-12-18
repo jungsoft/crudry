@@ -26,27 +26,44 @@ defmodule CrudryTest.Repo do
   end
 end
 
-# Mock for a schema
+# Generate mock for a ecto schema.
+defmodule Schema do
+  defmacro __using__(_) do
+    quote do
+      defstruct x: "123", bang: false
+
+      # Each changeset functions changes `attrs` in a different way so
+      # we can verify which one was called.
+      # TODO: This is not a clean way to do it, so change it
+
+      def changeset(test, attrs) do
+        Map.merge(test, attrs)
+      end
+
+      def create_changeset(test, %{x: x}) do
+        attrs = %{x: x + 1}
+        Map.merge(test, attrs)
+      end
+
+      def update_changeset(test, %{x: x}) do
+        attrs = %{x: x + 2}
+        Map.merge(test, attrs)
+      end
+    end
+  end
+end
+
+# Mocks for schemas
 defmodule CrudryTest.Test do
-  defstruct x: "123", bang: false
+  use Schema
+end
 
-  # Each changeset functions changes `attrs` in a different way so
-  # we can verify which one was called.
-  # TODO: This is not a clean way to do it, so change it
+defmodule CrudryTest.CamelizedSchemaName do
+  use Schema
+end
 
-  def changeset(test, attrs) do
-    Map.merge(test, attrs)
-  end
-
-  def create_changeset(test, %{x: x}) do
-    attrs = %{x: x + 1}
-    Map.merge(test, attrs)
-  end
-
-  def update_changeset(test, %{x: x}) do
-    attrs = %{x: x + 2}
-    Map.merge(test, attrs)
-  end
+defmodule CrudryTest.Category do
+  use Schema
 end
 
 ExUnit.start()

@@ -21,7 +21,7 @@ defmodule FunctionsGenerator do
 
   def generate_function(:list, name, module, _create, _update) do
     quote location: :keep do
-      def unquote(:"list_#{name}s")() do
+      def unquote(:"list_#{Inflex.pluralize(name)}")() do
         unquote(module)
         |> alias!(Repo).all()
       end

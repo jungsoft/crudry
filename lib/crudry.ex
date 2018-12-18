@@ -76,7 +76,7 @@ defmodule Crudry do
       schema_module
       |> get_module()
       |> get_module_name()
-      |> String.downcase()
+      |> Macro.underscore()
 
     for func <- [:get, :get!, :list, :create, :update, :delete] do
       if define_function?(func, opts[:only], opts[:except]) do

@@ -115,4 +115,26 @@ defmodule CrudryTest do
     assert ContextExceptDefault.update_test(struct(Test), %{x: 2}) == {:ok, %Test{x: 2}}
     assert length(ContextExceptDefault.__info__(:functions)) == 3
   end
+
+  test "underscore camelized schema name" do
+    defmodule ContextUnderscore do
+      alias CrudryTest.Repo
+      Crudry.generate_functions(CrudryTest.CamelizedSchemaName)
+    end
+
+    assert ContextUnderscore.create_camelized_schema_name(%{x: 2}) ==
+             {:ok, %CrudryTest.CamelizedSchemaName{x: 2}}
+
+    assert ContextUnderscore.list_camelized_schema_names() == [1, 2, 3]
+  end
+
+  test "pluralize correctly" do
+    defmodule ContextPluralize do
+      alias CrudryTest.Repo
+      Crudry.generate_functions(CrudryTest.Category)
+    end
+
+    assert ContextPluralize.create_category(%{x: 2}) == {:ok, %CrudryTest.Category{x: 2}}
+    assert ContextPluralize.list_categories() == [1, 2, 3]
+  end
 end
