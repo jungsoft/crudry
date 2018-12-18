@@ -55,7 +55,7 @@ defmodule Crudry do
         require Crudry
 
         # Assuming Accounts.User implements a `changeset/2` function, used both to create and update a user.
-        Crudry.generate_functions MyApp.Accounts.User
+        Crudry.generate_functions Accounts.User
       end
 
     Now, all this functionality is available:
@@ -72,67 +72,15 @@ defmodule Crudry do
   defmacro generate_functions(schema_module, opts \\ []) do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
 
-    module = get_module(schema_module)
-    name = get_module_name(module) |> String.downcase()
+    name =
+      schema_module
+      |> get_module()
+      |> get_module_name()
+      |> String.downcase()
 
-    quote location: :keep do
-      if unquote(define_function?(:get, opts[:only], opts[:except])) do
-        def unquote(:"get_#{name}")(id) do
-          unquote(module)
-          |> alias!(Repo).get(id)
-        end
-      end
-
-      if unquote(define_function?(:get!, opts[:only], opts[:except])) do
-        def unquote(:"get_#{name}!")(id) do
-          unquote(module)
-          |> alias!(Repo).get!(id)
-        end
-      end
-
-      if unquote(define_function?(:list, opts[:only], opts[:except])) do
-        def unquote(:"list_#{name}s")() do
-          unquote(module)
-          |> alias!(Repo).all()
-        end
-      end
-
-      if unquote(define_function?(:create, opts[:only], opts[:except])) do
-        def unquote(:"create_#{name}")(attrs) do
-          unquote(module)
-          |> alias!()
-          |> IO.inspect()
-          |> struct()
-          |> unquote(module).unquote(opts[:create])(attrs)
-          |> alias!(Repo).insert()
-        end
-      end
-
-      if unquote(define_function?(:update, opts[:only], opts[:except])) do
-        def unquote(:"update_#{name}")(%module{} = struct, attrs) do
-          struct
-          |> unquote(module).unquote(opts[:update])(attrs)
-          |> alias!(Repo).update()
-        end
-
-        def unquote(:"update_#{name}")(id, attrs) do
-          id
-          |> unquote(:"get_#{name}")()
-          |> unquote(:"update_#{name}")(attrs)
-        end
-      end
-
-      if unquote(define_function?(:delete, opts[:only], opts[:except])) do
-        def unquote(:"delete_#{name}")(%module{} = struct) do
-          struct
-          |> alias!(Repo).delete()
-        end
-
-        def unquote(:"delete_#{name}")(id) do
-          id
-          |> unquote(:"get_#{name}")()
-          |> unquote(:"delete_#{name}")()
-        end
+    for func <- [:get, :get!, :list, :create, :update, :delete] do
+      if define_function?(func, opts[:only], opts[:except]) do
+        FunctionsGenerator.generate_function(func, name, schema_module, opts[:create], opts[:update])
       end
     end
   end

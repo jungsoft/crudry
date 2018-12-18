@@ -7,8 +7,9 @@ defmodule CrudryTest do
   test "creates the CRUD functions" do
     defmodule Context do
       alias CrudryTest.Repo
+      alias CrudryTest.Test
 
-      Crudry.generate_functions(CrudryTest.Test)
+      Crudry.generate_functions(Test)
     end
 
     assert Context.create_test(%{x: 2}) == {:ok, %Test{x: 2}}
