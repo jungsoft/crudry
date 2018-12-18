@@ -3,6 +3,67 @@ defmodule Crudry do
   Crudry is a library for DRYing CRUD.
 
   The library was made with Phoenix contexts in mind, using Ecto.Repo as the repository.
+
+  ## Usage
+
+  To generate CRUD functions for a given schema, simply do
+
+      defmodule MyApp.MyContext do
+        alias MyApp.Repo
+        alias MyApp.MySchema
+        require Crudry
+
+        Crudry.generate_functions MySchema
+      end
+
+  And the context will become
+
+      defmodule MyApp.MyContext do
+        alias MyApp.Repo
+        alias MyApp.MySchema
+        require Crudry
+
+        def get_my_schema(id) do
+          Repo.get(MySchema, id)
+        end
+
+        def get_my_schema!(id) do
+          Repo.get!(MySchema, id)
+        end
+
+        def list_my_schemas() do
+          Repo.all(MySchema)
+        end
+
+        def create_my_schema(attrs) do
+          %MySchema{}
+          |> MySchema.changeset(attrs)
+          |> Repo.insert()
+        end
+
+        def update_my_schema(%MySchema{} = my_schema, attrs) do
+          my_schema
+          |> MySchema.changeset(attrs)
+          |> Repo.update()
+        end
+
+        def update_my_schema(id, attrs) do
+          id
+          |> get_my_schema()
+          |> update_my_schema(attrs)
+        end
+
+        def delete_my_schema(%MySchema{} = my_schema) do
+          my_schema
+          |> Repo.delete()
+        end
+
+        def delete_my_schema(id) do
+          id
+          |> get_my_schema()
+          |> delete_my_schema()
+        end
+      end
   """
 
   @doc """
