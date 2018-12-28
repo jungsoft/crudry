@@ -132,15 +132,10 @@ defmodule Crudry.Context do
   """
   defmacro generate_functions(schema_module, opts \\ []) do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
-
-    name =
-      schema_module
-      |> get_module()
-      |> get_module_name()
-      |> Macro.underscore()
+    name = Helper.get_underscored_name(schema_module)
 
     for func <- [:get, :get!, :list, :create, :update, :delete] do
-      if define_function?(func, opts[:only], opts[:except]) do
+      if Helper.define_function?(func, opts[:only], opts[:except]) do
         ContextFunctionsGenerator.generate_function(func, name, schema_module, opts[:create], opts[:update])
       end
     end
@@ -159,34 +154,5 @@ defmodule Crudry.Context do
       only: only || [],
       except: except || []
     ]
-  end
-
-  # Transforms an AST representation like {:__aliases__, [alias: false], [:Module, :Submodule]}
-  # into Module.Submodule
-  defp get_module(opts) do
-    Macro.expand(opts, __ENV__)
-  end
-
-  # Get the name of the module as a string.
-  # Transforms Module.Submodule into "Submodule"
-  defp get_module_name(module) do
-    module
-    |> to_string()
-    |> String.split(".")
-    |> List.last()
-  end
-
-  # Given the `only` and `except` options, check if a given function should be defined.
-  # Here, `function` is an atom: :get, :get!, :list, :create, :update or :delete
-  defp define_function?(_function, [] = _only, [] = _except) do
-    true
-  end
-
-  defp define_function?(function, only, [] = _except) do
-    Enum.member?(only, function)
-  end
-
-  defp define_function?(function, [] = _only, except) do
-    !Enum.member?(except, function)
   end
 end
