@@ -1,6 +1,6 @@
-defmodule CrudryTest do
+defmodule CrudryContextTest do
   use ExUnit.Case
-  doctest Crudry
+  doctest Crudry.Context
 
   alias CrudryTest.Test
 
@@ -9,7 +9,7 @@ defmodule CrudryTest do
       alias CrudryTest.Repo
       alias CrudryTest.Test
 
-      Crudry.generate_functions(Test)
+      Crudry.Context.generate_functions(Test)
     end
 
     assert Context.create_test(%{x: 2}) == {:ok, %Test{x: 2}}
@@ -18,15 +18,15 @@ defmodule CrudryTest do
     assert Context.get_test!(3) == %Test{x: "123", bang: true}
     assert Context.update_test(struct(Test), %{x: 3}) == {:ok, %Test{x: 3}}
     assert Context.update_test(3, %{x: 3}) == {:ok, %Test{x: 3}}
-    assert Context.delete_test(struct(Test)) == :deleted
-    assert Context.delete_test(2) == :deleted
+    assert Context.delete_test(struct(Test)) == {:ok, :deleted}
+    assert Context.delete_test(2) == {:ok, :deleted}
   end
 
   test "allow defining of create changeset" do
     defmodule ContextCreate do
       alias CrudryTest.Repo
 
-      Crudry.generate_functions(CrudryTest.Test, create: :create_changeset)
+      Crudry.Context.generate_functions(CrudryTest.Test, create: :create_changeset)
     end
 
     assert ContextCreate.create_test(%{x: 2}) == {:ok, %Test{x: 3}}
@@ -37,7 +37,7 @@ defmodule CrudryTest do
     defmodule ContextUpdate do
       alias CrudryTest.Repo
 
-      Crudry.generate_functions(CrudryTest.Test, update: :update_changeset)
+      Crudry.Context.generate_functions(CrudryTest.Test, update: :update_changeset)
     end
 
     assert ContextUpdate.create_test(%{x: 2}) == {:ok, %Test{x: 2}}
@@ -48,7 +48,7 @@ defmodule CrudryTest do
     defmodule ContextBoth do
       alias CrudryTest.Repo
 
-      Crudry.generate_functions(CrudryTest.Test,
+      Crudry.Context.generate_functions(CrudryTest.Test,
         create: :create_changeset,
         update: :update_changeset
       )
@@ -62,8 +62,8 @@ defmodule CrudryTest do
     defmodule ContextDefault do
       alias CrudryTest.Repo
 
-      Crudry.default(create: :create_changeset, update: :update_changeset)
-      Crudry.generate_functions(CrudryTest.Test)
+      Crudry.Context.default(create: :create_changeset, update: :update_changeset)
+      Crudry.Context.generate_functions(CrudryTest.Test)
     end
 
     assert ContextDefault.create_test(%{x: 2}) == {:ok, %Test{x: 3}}
@@ -74,7 +74,7 @@ defmodule CrudryTest do
     defmodule ContextOnly do
       alias CrudryTest.Repo
 
-      Crudry.generate_functions(CrudryTest.Test, only: [:create, :list])
+      Crudry.Context.generate_functions(CrudryTest.Test, only: [:create, :list])
     end
 
     assert ContextOnly.create_test(%{x: 2}) == {:ok, %Test{x: 2}}
@@ -84,7 +84,7 @@ defmodule CrudryTest do
     defmodule ContextExcept do
       alias CrudryTest.Repo
 
-      Crudry.generate_functions(CrudryTest.Test, except: [:get!, :list, :delete])
+      Crudry.Context.generate_functions(CrudryTest.Test, except: [:get!, :list, :delete])
     end
 
     assert ContextExcept.create_test(%{x: 2}) == {:ok, %Test{x: 2}}
@@ -96,8 +96,8 @@ defmodule CrudryTest do
     defmodule ContextOnlyDefault do
       alias CrudryTest.Repo
 
-      Crudry.default(only: [:create, :list])
-      Crudry.generate_functions(CrudryTest.Test)
+      Crudry.Context.default(only: [:create, :list])
+      Crudry.Context.generate_functions(CrudryTest.Test)
     end
 
     assert ContextOnlyDefault.create_test(%{x: 2}) == {:ok, %Test{x: 2}}
@@ -107,8 +107,8 @@ defmodule CrudryTest do
     defmodule ContextExceptDefault do
       alias CrudryTest.Repo
 
-      Crudry.default(except: [:get!, :list, :delete])
-      Crudry.generate_functions(CrudryTest.Test)
+      Crudry.Context.default(except: [:get!, :list, :delete])
+      Crudry.Context.generate_functions(CrudryTest.Test)
     end
 
     assert ContextExceptDefault.create_test(%{x: 2}) == {:ok, %Test{x: 2}}
@@ -119,7 +119,7 @@ defmodule CrudryTest do
   test "underscore camelized schema name" do
     defmodule ContextUnderscore do
       alias CrudryTest.Repo
-      Crudry.generate_functions(CrudryTest.CamelizedSchemaName)
+      Crudry.Context.generate_functions(CrudryTest.CamelizedSchemaName)
     end
 
     assert ContextUnderscore.create_camelized_schema_name(%{x: 2}) ==
@@ -131,7 +131,7 @@ defmodule CrudryTest do
   test "pluralize correctly" do
     defmodule ContextPluralize do
       alias CrudryTest.Repo
-      Crudry.generate_functions(CrudryTest.Category)
+      Crudry.Context.generate_functions(CrudryTest.Category)
     end
 
     assert ContextPluralize.create_category(%{x: 2}) == {:ok, %CrudryTest.Category{x: 2}}

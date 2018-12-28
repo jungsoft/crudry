@@ -1,4 +1,4 @@
-defmodule FunctionsGenerator do
+defmodule ContextFunctionsGenerator do
   @moduledoc false
 
   def generate_function(:get, name, module, _create, _update) do
