@@ -8,6 +8,10 @@ defmodule CrudryTest.Repo do
     [1, 2, 3]
   end
 
+  def get(_module, 0) do
+    nil
+  end
+
   def get(module, _id) do
     struct(module)
   end
@@ -22,7 +26,7 @@ defmodule CrudryTest.Repo do
   end
 
   def delete(_) do
-    :deleted
+    {:ok, :deleted}
   end
 end
 
