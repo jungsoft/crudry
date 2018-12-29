@@ -104,7 +104,7 @@ defmodule Crudry.Context do
   @doc """
     Generates CRUD functions for the `schema_module`.
 
-    Custom options can be given. To see the available options, refer to the documenation of `default/1`.
+    Custom options can be given. To see the available options, refer to the documenation of `Crudry.Context.default/1`.
 
     ## Examples
 

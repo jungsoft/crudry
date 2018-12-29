@@ -28,13 +28,17 @@ defmodule CrudryTest.Repo do
   def delete(_) do
     {:ok, :deleted}
   end
+
+  def preload(module, assocs) do
+    Map.put(module, :assocs, assocs)
+  end
 end
 
 # Generate mock for a ecto schema.
 defmodule Schema do
   defmacro __using__(_) do
     quote do
-      defstruct x: "123", bang: false
+      defstruct x: "123", bang: false, assocs: []
 
       # Each changeset functions changes `attrs` in a different way so
       # we can verify which one was called.

@@ -7,6 +7,12 @@ defmodule ContextFunctionsGenerator do
         unquote(module)
         |> alias!(Repo).get(id)
       end
+
+      def unquote(:"get_#{name}_with_assocs")(id, assocs) do
+        unquote(module)
+        |> alias!(Repo).get(id)
+        |> alias!(Repo).preload(assocs)
+      end
     end
   end
 
@@ -50,6 +56,19 @@ defmodule ContextFunctionsGenerator do
       def unquote(:"update_#{name}")(id, attrs) do
         id
         |> unquote(:"get_#{name}")()
+        |> unquote(:"update_#{name}")(attrs)
+      end
+
+      def unquote(:"update_#{name}_with_assocs")(%module{} = struct, attrs, assocs) do
+        struct
+        |> alias!(Repo).preload(assocs)
+        |> unquote(module).unquote(update)(attrs)
+        |> alias!(Repo).update()
+      end
+
+      def unquote(:"update_#{name}_with_assocs")(id, attrs, assocs) do
+        id
+        |> unquote(:"get_#{name}_with_assocs")(assocs)
         |> unquote(:"update_#{name}")(attrs)
       end
     end
