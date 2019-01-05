@@ -68,8 +68,8 @@ defmodule ContextFunctionsGenerator do
 
       def unquote(:"update_#{name}_with_assocs")(id, attrs, assocs) do
         id
-        |> unquote(:"get_#{name}_with_assocs")(assocs)
-        |> unquote(:"update_#{name}")(attrs)
+        |> unquote(:"get_#{name}")()
+        |> unquote(:"update_#{name}_with_assocs")(attrs, assocs)
       end
     end
   end
