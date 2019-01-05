@@ -4,10 +4,8 @@ defmodule ResolverFunctionsGenerator do
   def generate_function(:get, name, context) do
     quote location: :keep do
       def unquote(:"get_#{name}")(%{id: id}, _info) do
-        case apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id]) do
-         nil -> {:error, "#{String.capitalize(unquote(name))} not found."}
-         %{} = any -> {:ok, any}
-        end
+        apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id])
+        |> nil_to_error(fn record -> {:ok, record} end)
       end
     end
   end
@@ -33,10 +31,8 @@ defmodule ResolverFunctionsGenerator do
   def generate_function(:update, name, context) do
     quote location: :keep do
       def unquote(:"update_#{name}")(%{:id => id, unquote(String.to_existing_atom(name)) => params}, _info) do
-        case apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id]) do
-          nil -> {:error, "#{String.capitalize(unquote(name))} not found."}
-          %{} = any -> apply(unquote(context), String.to_existing_atom("update_#{unquote(name)}"), [any, params])
-        end
+        apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id])
+        |> nil_to_error(fn record -> apply(unquote(context), String.to_existing_atom("update_#{unquote(name)}"), [record, params]) end)
       end
     end
   end
@@ -44,9 +40,18 @@ defmodule ResolverFunctionsGenerator do
   def generate_function(:delete, name, context) do
     quote location: :keep do
       def unquote(:"delete_#{name}")(%{id: id}, _info) do
-        case apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id]) do
+        apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id])
+        |> nil_to_error(fn record -> apply(unquote(context), String.to_existing_atom("delete_#{unquote(name)}"), [record]) end)
+      end
+    end
+  end
+
+  def generate_function(:nil_to_error, name, _context) do
+    quote location: :keep do
+      def unquote(:nil_to_error)(result, func) do
+        case result do
           nil -> {:error, "#{String.capitalize(unquote(name))} not found."}
-          %{} = any -> apply(unquote(context), String.to_existing_atom("delete_#{unquote(name)}"), [any])
+          %{} = record -> func.(record)
         end
       end
     end
