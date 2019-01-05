@@ -50,7 +50,7 @@ defmodule ResolverFunctionsGenerator do
     quote location: :keep do
       def unquote(:nil_to_error)(result, func) do
         case result do
-          nil -> {:error, "#{String.capitalize(unquote(name))} not found."}
+          nil -> {:error, "#{Macro.camelize(unquote(name))} not found."}
           %{} = record -> func.(record)
         end
       end

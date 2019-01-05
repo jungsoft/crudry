@@ -81,4 +81,21 @@ defmodule CrudryResolverTest do
     assert ResolverExceptUpdate.update_test(%{id: 3, test: %{x: 3}}, @info) == {:ok, %Test{x: 3, assocs: [:assoc]}}
     assert ResolverExceptUpdate.update_test(%{id: 0, test: %{x: 3}}, @info) == {:error, "Test not found."}
   end
+
+  test "Camelized name in error message" do
+    defmodule CamelizedContext do
+      alias CrudryTest.Repo
+      alias CrudryTest.CamelizedSchemaName
+      require Crudry.Context
+
+      Crudry.Context.generate_functions(CamelizedSchemaName)
+    end
+
+    defmodule CamelizedResolver do
+      Crudry.Resolver.generate_functions(CamelizedContext, CrudryTest.CamelizedSchemaName)
+    end
+
+    assert CamelizedResolver.get_camelized_schema_name(%{id: 0}, @info) == {:error, "CamelizedSchemaName not found."}
+
+  end
 end
