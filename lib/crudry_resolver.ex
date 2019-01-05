@@ -39,8 +39,9 @@ defmodule Crudry.Resolver do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
     name = Helper.get_underscored_name(schema_module)
 
-    for func <- [:get, :list, :create, :update, :delete] do
-      if Helper.define_function?(func, opts[:only], opts[:except]) do
+    # Always generate nil_to_error function since it's used in the other generated functions
+    for func <- [:nil_to_error, :get, :list, :create, :update, :delete] do
+      if func == :nil_to_error || Helper.define_function?(func, opts[:only], opts[:except]) do
         ResolverFunctionsGenerator.generate_function(func, name, context)
       end
     end
