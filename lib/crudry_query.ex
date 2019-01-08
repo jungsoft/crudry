@@ -12,10 +12,10 @@ defmodule Crudry.Query do
 
   Expects `opts` to be a map containing some of these fields:
 
-  * `limit`: defaults to `nil`
+  * `limit`: defaults to not limiting
   * `offset`: defaults to `0`
-  * `sorting_order`: defaults to `:asc`
-  * `order_by`: defaults to `:id`
+  * `sorting_order`: defaults to `:asc` (only works if there is also a `order_by` specified)
+  * `order_by`: defaults to not ordering
 
   ## Examples
 
@@ -27,8 +27,8 @@ defmodule Crudry.Query do
     limit = Map.get(opts, :limit, nil)
     offset = Map.get(opts, :offset, 0)
     sorting_order = Map.get(opts, :sorting_order, :asc)
-    order_by = Map.get(opts, :order_by, :id)
-    order = {sorting_order, to_atom(order_by)}
+    order_by = Map.get(opts, :order_by)
+    order = if order_by, do: [{sorting_order, to_atom(order_by)}], else: []
 
     initial_query
     |> limit(^limit)
@@ -73,7 +73,7 @@ defmodule Crudry.Query do
       Crudry.Query.filter(MySchema, %{id: 5, name: "John"})
       Crudry.Query.filter(MySchema, %{name: ["John", "Doe"]})
   """
-  def filter(initial_query, filters) do
+  def filter(initial_query, filters \\ []) do
     Enum.reduce(filters, initial_query, fn
       {field, filter_arr}, query_acc ->
         query_acc

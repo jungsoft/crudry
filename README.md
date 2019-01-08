@@ -11,7 +11,7 @@ The package can be installed by adding `crudry` to your list of dependencies in 
 ```elixir
 def deps do
   [
-    {:crudry, "~> 0.3.2"}
+    {:crudry, "~> 0.3.3"}
   ]
 end
 ```
