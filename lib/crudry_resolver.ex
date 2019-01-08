@@ -87,6 +87,8 @@ defmodule Crudry.Resolver do
     * `:except` - list of functions to not be generated. If not empty, only functions not specified
     in this list will be generated. Default to `[]`.
 
+    The accepted values for `:only` and `:except` are: `[:get, :list, :create, :update, :delete]`.
+
   ## Examples
 
       iex> Crudry.Resolver.default only: [:create, :list]

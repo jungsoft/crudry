@@ -31,6 +31,43 @@ defmodule ContextFunctionsGenerator do
         unquote(module)
         |> alias!(Repo).all()
       end
+
+      def unquote(:"list_#{Inflex.pluralize(name)}")(opts) do
+        unquote(module)
+        |> Crudry.Query.list(opts)
+        |> alias!(Repo).all()
+      end
+    end
+  end
+
+  def generate_function(:count, name, module, _create, _update) do
+    quote location: :keep do
+      def unquote(:"count_#{Inflex.pluralize(name)}")(field \\ :id) do
+        unquote(module)
+        |> alias!(Repo).aggregate(:count, field)
+      end
+    end
+  end
+
+  def generate_function(:search, name, module, _create, _update) do
+    quote location: :keep do
+      def unquote(:"search_#{Inflex.pluralize(name)}")(search_term) do
+        module_fields = unquote(module).__schema__(:fields)
+
+        unquote(module)
+        |> Crudry.Query.search(search_term, module_fields)
+        |> alias!(Repo).all()
+      end
+    end
+  end
+
+  def generate_function(:filter, name, module, _create, _update) do
+    quote location: :keep do
+      def unquote(:"filter_#{Inflex.pluralize(name)}")(filters) do
+        unquote(module)
+        |> Crudry.Query.filter(filters)
+        |> alias!(Repo).all()
+      end
     end
   end
 

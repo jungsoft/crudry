@@ -40,6 +40,26 @@ defmodule Crudry.Context do
           Repo.all(MySchema)
         end
 
+        def list_my_schemas(opts) do
+          Crudry.Query.list(MySchema, opts)
+          |> Repo.all()
+        end
+
+        def count_my_schemas(field \\ :id) do
+          Repo.aggregate(MySchema, :count, field)
+        end
+
+        def search_my_schemas(search_term) do
+          module_fields = MySchema.__schema__(:fields)
+
+          Crudry.Query.search(MySchema, search_term, module_fields)
+          |> Repo.all()
+        end
+
+        def filter_my_schemas(filters) do
+          Crudry.Query.filter(MySchema, filters)
+        end
+
         def create_my_schema(attrs) do
           %MySchema{}
           |> MySchema.changeset(attrs)
@@ -101,6 +121,8 @@ defmodule Crudry.Context do
     * `:except` - list of functions to not be generated. If not empty, only functions not specified
     in this list will be generated. Default to `[]`.
 
+    The accepted values for `:only` and `:except` are: `[:get, :get!, :list, :search, :filter, :count, :create, :update, :delete]`.
+
   ## Examples
 
       iex> Crudry.Context.default create: :create_changeset, update: :update_changeset
@@ -143,6 +165,10 @@ defmodule Crudry.Context do
       Accounts.get_user_with_assocs(id, assocs)
       Accounts.get_user!(id)
       Accounts.list_users()
+      Accounts.list_users(opts)
+      Accounts.count_users(field \\ :id)
+      Accounts.search_users(search_term)
+      Accounts.filter_users(filters)
       Accounts.create_user(attrs)
       Accounts.update_user(%User{}, attrs)
       Accounts.update_user(id, attrs)
@@ -155,7 +181,7 @@ defmodule Crudry.Context do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
     name = Helper.get_underscored_name(schema_module)
 
-    for func <- [:get, :get!, :list, :create, :update, :delete] do
+    for func <- [:get, :get!, :list, :search, :filter, :count, :create, :update, :delete] do
       if Helper.define_function?(func, opts[:only], opts[:except]) do
         ContextFunctionsGenerator.generate_function(func, name, schema_module, opts[:create], opts[:update])
       end
