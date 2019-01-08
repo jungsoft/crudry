@@ -131,10 +131,21 @@ defmodule Crudry.Resolver do
     _ = String.to_atom(name)
 
     # Always generate nil_to_error function since it's used in the other generated functions
-    for func <- [:nil_to_error, :get, :list, :create, :update, :delete] do
+    for func <- get_functions_to_be_generated(__CALLER__.module) do
       if func == :nil_to_error || Helper.define_function?(func, opts[:only], opts[:except]) do
         ResolverFunctionsGenerator.generate_function(func, name, context)
       end
+    end
+  end
+
+  # Use an attribute in the caller's module to make sure the `nil_to_error` function is only generated once per module.
+  defp get_functions_to_be_generated(module) do
+    functions = [:get, :list, :create, :update, :delete]
+    if Module.get_attribute(module, :called) do
+      functions
+    else
+      Module.put_attribute(module, :called, true)
+      [:nil_to_error | functions]
     end
   end
 

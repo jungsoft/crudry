@@ -12,6 +12,14 @@ defmodule CrudryResolverTest do
     Crudry.Context.generate_functions(Test)
   end
 
+  defmodule CamelizedContext do
+    alias CrudryTest.Repo
+    alias CrudryTest.CamelizedSchemaName
+    require Crudry.Context
+
+    Crudry.Context.generate_functions(CamelizedSchemaName)
+  end
+
   @info %{}
 
   test "creates the CRUD functions" do
@@ -83,19 +91,22 @@ defmodule CrudryResolverTest do
   end
 
   test "Camelized name in error message" do
-    defmodule CamelizedContext do
-      alias CrudryTest.Repo
-      alias CrudryTest.CamelizedSchemaName
-      require Crudry.Context
-
-      Crudry.Context.generate_functions(CamelizedSchemaName)
-    end
-
     defmodule CamelizedResolver do
       Crudry.Resolver.generate_functions(CamelizedContext, CrudryTest.CamelizedSchemaName)
     end
 
     assert CamelizedResolver.get_camelized_schema_name(%{id: 0}, @info) == {:error, "CamelizedSchemaName not found."}
-
   end
+
+  test "Generate only one nil_to_error function" do
+    defmodule MultipleResolver do
+      Crudry.Resolver.generate_functions(Context, Test)
+      Crudry.Resolver.generate_functions(CamelizedContext, CrudryTest.CamelizedSchemaName)
+    end
+
+    # When multiplie nil_to_error functions are generated, a warning is raised.
+    # Not sure how to test for warnings, so for now just let the test pass and check if there are no warnings manually.
+    assert true
+  end
+
 end
