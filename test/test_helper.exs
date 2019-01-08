@@ -32,17 +32,23 @@ defmodule CrudryTest.Repo do
   def preload(module, assocs) do
     Map.put(module, :assocs, assocs)
   end
+
+  def aggregate(_query, _aggregate, _field) do
+    6
+  end
 end
 
-# Generate mock for a ecto schema.
+# Generate mock for an ecto schema.
 defmodule Schema do
   defmacro __using__(_) do
     quote do
-      defstruct x: "123", bang: false, assocs: []
+      use Ecto.Schema
 
-      # Each changeset functions changes `attrs` in a different way so
-      # we can verify which one was called.
-      # TODO: This is not a clean way to do it, so change it
+      embedded_schema do
+        field :x, :string, default: "123"
+        field :bang, :boolean, default: false
+        field :assocs, {:array, :string}, default: []
+      end
 
       def changeset(test, attrs) do
         Map.merge(test, attrs)

@@ -37,7 +37,8 @@ defmodule Crudry.MixProject do
   defp deps do
     [
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
-      {:inflex, "~> 1.10.0"}
+      {:inflex, "~> 1.10.0"},
+      {:ecto, "~> 3.0"}
     ]
   end
 end
