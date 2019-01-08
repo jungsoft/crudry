@@ -2,7 +2,7 @@ defmodule Crudry.Query do
   @moduledoc """
   Generates Ecto Queries.
 
-  All functions in this module return `Ecto.Query`.
+  All functions in this module return an `Ecto.Query`.
   """
 
   import Ecto.Query

@@ -11,7 +11,7 @@ defmodule Crudry.Context do
       defmodule MyApp.MyContext do
         alias MyApp.Repo
         alias MyApp.MySchema
-        require Crudry
+        require Crudry.Context
 
         Crudry.Context.generate_functions MySchema
       end
@@ -21,7 +21,7 @@ defmodule Crudry.Context do
       defmodule MyApp.MyContext do
         alias MyApp.Repo
         alias MyApp.MySchema
-        require Crudry
+        require Crudry.Context
 
         def get_my_schema(id) do
           Repo.get(MySchema, id)
@@ -45,7 +45,7 @@ defmodule Crudry.Context do
           |> Repo.all()
         end
 
-        def count_my_schemas(field \\ :id) do
+        def count_my_schemas(field \\\\ :id) do
           Repo.aggregate(MySchema, :count, field)
         end
 
@@ -153,7 +153,7 @@ defmodule Crudry.Context do
 
       defmodule MyApp.Accounts do
         alias MyApp.Repo
-        require Crudry
+        require Crudry.Context
 
         # Assuming Accounts.User implements a `changeset/2` function, used both to create and update a user.
         Crudry.Context.generate_functions Accounts.User
@@ -166,7 +166,7 @@ defmodule Crudry.Context do
       Accounts.get_user!(id)
       Accounts.list_users()
       Accounts.list_users(opts)
-      Accounts.count_users(field \\ :id)
+      Accounts.count_users(field \\\\ :id)
       Accounts.search_users(search_term)
       Accounts.filter_users(filters)
       Accounts.create_user(attrs)
