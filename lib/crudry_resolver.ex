@@ -12,7 +12,7 @@ defmodule Crudry.Resolver do
         alias MyApp.Repo
         alias MyApp.MyContext
         alias MyApp.MySchema
-        require Crudry
+        require Crudry.Resolver
 
         Crudry.Resolver.generate_functions MyContext, MySchema
       end
@@ -23,7 +23,7 @@ defmodule Crudry.Resolver do
         alias MyApp.Repo
         alias MyApp.MyContext
         alias MyApp.MySchema
-        require Crudry
+        require Crudry.Resolver
 
         def get_my_schema(%{id: id}, _info) do
           MyContext.get_my_schema(id)
@@ -63,7 +63,7 @@ defmodule Crudry.Resolver do
         alias MyApp.Repo
         alias MyApp.MyContext
         alias MyApp.MySchema
-        require Crudry
+        require Crudry.Resolver
 
         Crudry.Resolver.generate_functions MyContext, MySchema, except: [:update]
 
@@ -113,7 +113,7 @@ defmodule Crudry.Resolver do
     assuming there is an Accounts context which already implements CRUD functions for User.
 
       defmodule MyApp.AccountsResolver do
-        require Crudry
+        require Crudry.Resolver
 
         Crudry.Resolver.generate_functions Accounts, Accounts.User
       end
