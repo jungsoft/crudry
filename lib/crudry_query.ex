@@ -21,19 +21,23 @@ defmodule Crudry.Query do
 
       Crudry.Query.list(MySchema, %{limit: 10})
       Crudry.Query.list(MySchema, %{limit: 10, offset: 3, sorting_order: :desc, order_by: :value})
+      Crudry.Query.list(MySchema, %{order_by: "value"})
   """
   def list(initial_query, opts \\ %{}) do
     limit = Map.get(opts, :limit, nil)
     offset = Map.get(opts, :offset, 0)
     sorting_order = Map.get(opts, :sorting_order, :asc)
     order_by = Map.get(opts, :order_by, :id)
-    order = {sorting_order, order_by}
+    order = {sorting_order, to_atom(order_by)}
 
     initial_query
     |> limit(^limit)
     |> offset(^offset)
     |> order_by(^order)
   end
+
+  defp to_atom(value) when is_atom(value), do: value
+  defp to_atom(value) when is_binary(value), do: String.to_atom(value)
 
   @doc """
   Searches for the `search_term` in the given `fields`.
