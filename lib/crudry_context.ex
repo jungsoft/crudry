@@ -93,6 +93,8 @@ defmodule Crudry.Context do
 
         def delete_my_schema(%MySchema{} = my_schema) do
           my_schema
+          |> Ecto.Changeset.change()
+          |> check_assocs([])
           |> Repo.delete()
         end
 
@@ -101,7 +103,28 @@ defmodule Crudry.Context do
           |> get_my_schema()
           |> delete_my_schema()
         end
+
+        # Function to check no_assoc_constraints
+        defp check_assocs(changeset, nil), do: changeset
+        defp check_assocs(changeset, constraints) do
+          Enum.reduce(constraints, changeset, fn i, acc -> Ecto.Changeset.no_assoc_constraint(acc, i) end)
+        end
       end
+
+  Now, suppose the changeset for create and update are different,
+  and we want to delete the record only if the association `has_many :assocs` is empty:
+
+      defmodule MyApp.MyContext do
+        alias MyApp.Repo
+        alias MyApp.MySchema
+        require Crudry.Context
+
+        Crudry.Context.generate_functions MySchema,
+          create: :create_changeset,
+          update: :update_changeset,
+          delete_constraints: [:assocs]
+      end
+
   """
 
   @doc """
@@ -147,7 +170,7 @@ defmodule Crudry.Context do
   Custom options can be given. To see the available options, refer to the documenation of `Crudry.Context.default/1`.
   There is also one extra option that cannot be set by default:
 
-  `delete_constraints` - list of associations that must be empty to allow deletion.
+    * `delete_constraints` - list of associations that must be empty to allow deletion.
   `Ecto.Changeset.no_assoc_constraint` will be called for each association before deleting. Default to `[]`.
 
   ## Examples
@@ -195,7 +218,7 @@ defmodule Crudry.Context do
 
   # Use an attribute in the caller's module to make sure the `check_assocs` function is only generated once per module.
   defp get_functions_to_be_generated(module) do
-    functions = [:get, :get!, :list, :search, :filter, :count, :create, :update, :delete,]
+    functions = [:get, :get!, :list, :search, :filter, :count, :create, :update, :delete]
     if Module.get_attribute(module, :called) do
       functions
     else
