@@ -181,8 +181,8 @@ defmodule Crudry.Context do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
     name = Helper.get_underscored_name(schema_module)
 
-    for func <- [:get, :get!, :list, :search, :filter, :count, :create, :update, :delete] do
-      if Helper.define_function?(func, opts[:only], opts[:except]) do
+    for func <- [:get, :get!, :list, :search, :filter, :count, :create, :update, :delete, :check_assocs] do
+      if func == :check_assocs || Helper.define_function?(func, opts[:only], opts[:except]) do
         ContextFunctionsGenerator.generate_function(func, name, schema_module, opts[:create], opts[:update])
       end
     end

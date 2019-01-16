@@ -111,17 +111,39 @@ defmodule ContextFunctionsGenerator do
     end
   end
 
+  # defp check_constraints(changeset, constraints) do
+  #   Enum.reduce(constraints, changeset, fn i, acc -> Ecto.Changeset.no_assoc_constraint(acc, i) end)
+  # end
+
+  def generate_function(:check_assocs, _, _, _, _) do
+    quote location: :keep do
+      def unquote(:check_assocs)(changeset, nil), do: changeset
+
+      def unquote(:check_assocs)(changeset, constraints) when is_list(constraints) do
+        Enum.reduce(constraints, changeset, fn i, acc -> Ecto.Changeset.no_assoc_constraint(acc, i) end)
+      end
+
+      def unquote(:check_assocs)(changeset, constraint) do
+        Ecto.Changeset.no_assoc_constraint(changeset, constraint)
+      end
+
+    end
+  end
+
   def generate_function(:delete, name, module, _create, _update) do
     quote location: :keep, bind_quoted: [module: module], unquote: true do
-      def unquote(:"delete_#{name}")(%module{} = struct) do
+      def unquote(:"delete_#{name}")(struct, assoc_list \\ nil)
+      def unquote(:"delete_#{name}")(%module{} = struct, assoc_list) do
         struct
+        |> Ecto.Changeset.change()
+        |> check_assocs(assoc_list)
         |> alias!(Repo).delete()
       end
 
-      def unquote(:"delete_#{name}")(id) do
+      def unquote(:"delete_#{name}")(id, assoc_list) do
         id
         |> unquote(:"get_#{name}")()
-        |> unquote(:"delete_#{name}")()
+        |> unquote(:"delete_#{name}")(assoc_list)
       end
     end
   end
