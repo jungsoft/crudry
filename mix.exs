@@ -50,7 +50,7 @@ defmodule Crudry.MixProject do
     [
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:inflex, "~> 1.10.0"},
-      {:ecto, ">= 2.1.0"},
+      {:ecto, "~> 3.0"},
       {:ecto_sql, "~> 3.0"},
       {:postgrex, ">= 0.0.0"}
     ]
