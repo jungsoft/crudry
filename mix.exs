@@ -11,7 +11,19 @@ defmodule Crudry.MixProject do
       name: "Crudry",
       source_url: "https://github.com/gabrielpra1/crudry",
       description: "Crudry is a library for DRYing CRUD.",
-      package: package()
+      package: package(),
+      elixirc_paths: elixirc_paths(Mix.env),
+      aliases: aliases()
+    ]
+  end
+
+  def elixirc_paths(:test), do: ["lib", "test/support"]
+  def elixirc_paths(_), do: ["lib"]
+
+  defp aliases do
+    [
+      # Ensures database is reset before tests are run
+      test: ["ecto.create --quiet", "ecto.migrate", "test"]
     ]
   end
 
@@ -38,7 +50,9 @@ defmodule Crudry.MixProject do
     [
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:inflex, "~> 1.10.0"},
-      {:ecto, ">= 2.1.0"}
+      {:ecto, ">= 2.1.0"},
+      {:ecto_sql, "~> 3.0"},
+      {:postgrex, ">= 0.0.0"}
     ]
   end
 end
