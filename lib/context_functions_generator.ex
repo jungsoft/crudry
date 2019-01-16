@@ -126,7 +126,7 @@ defmodule ContextFunctionsGenerator do
       def unquote(:"delete_#{name}")(%module{} = struct) do
         struct
         |> Ecto.Changeset.change()
-        |> check_assocs(unquote(opts[:delete_constraints]))
+        |> check_assocs(unquote(opts[:check_constraints_on_delete]))
         |> alias!(Repo).delete()
       end
 

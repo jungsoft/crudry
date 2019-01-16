@@ -49,7 +49,7 @@ defmodule CrudryContextTest do
     defmodule ContextDelete do
       alias Crudry.{User, Post}
 
-      Crudry.Context.generate_functions(User, delete_constraints: [:posts])
+      Crudry.Context.generate_functions(User, check_constraints_on_delete: [:posts])
       Crudry.Context.generate_functions(Post)
     end
 
@@ -67,7 +67,7 @@ defmodule CrudryContextTest do
       alias Crudry.User
       alias Crudry.Post
 
-      Crudry.Context.generate_functions(User, delete_constraints: [:posts, :likes])
+      Crudry.Context.generate_functions(User, check_constraints_on_delete: [:posts, :likes])
       Crudry.Context.generate_functions(Post)
       Crudry.Context.generate_functions(Like)
     end

@@ -122,7 +122,7 @@ defmodule Crudry.Context do
         Crudry.Context.generate_functions MySchema,
           create: :create_changeset,
           update: :update_changeset,
-          delete_constraints: [:assocs]
+          check_constraints_on_delete: [:assocs]
       end
 
   """
@@ -170,7 +170,7 @@ defmodule Crudry.Context do
   Custom options can be given. To see the available options, refer to the documenation of `Crudry.Context.default/1`.
   There is also one extra option that cannot be set by default:
 
-    * `delete_constraints` - list of associations that must be empty to allow deletion.
+    * `check_constraints_on_delete` - list of associations that must be empty to allow deletion.
   `Ecto.Changeset.no_assoc_constraint` will be called for each association before deleting. Default to `[]`.
 
   ## Examples
@@ -239,7 +239,7 @@ defmodule Crudry.Context do
       update: update_changeset || :changeset,
       only: only || [],
       except: except || [],
-      delete_constraints: []
+      check_constraints_on_delete: []
     ]
   end
 end
