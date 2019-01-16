@@ -22,7 +22,7 @@ defmodule ResolverFunctionsGenerator do
 
   def generate_function(:create, name, context) do
     quote location: :keep do
-      def unquote(:"create_#{name}")(%{unquote(String.to_existing_atom(name)) => params}, _info) do
+      def unquote(:"create_#{name}")(%{params: params}, _info) do
         apply(unquote(context), String.to_existing_atom("create_#{unquote(name)}"), [params])
       end
     end
@@ -30,7 +30,7 @@ defmodule ResolverFunctionsGenerator do
 
   def generate_function(:update, name, context) do
     quote location: :keep do
-      def unquote(:"update_#{name}")(%{:id => id, unquote(String.to_existing_atom(name)) => params}, _info) do
+      def unquote(:"update_#{name}")(%{id: id, params: params}, _info) do
         apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id])
         |> nil_to_error(fn record -> apply(unquote(context), String.to_existing_atom("update_#{unquote(name)}"), [record, params]) end)
       end
