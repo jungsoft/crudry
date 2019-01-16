@@ -1,4 +1,3 @@
-
 defmodule Crudry.Like do
   use Ecto.Schema
   import Ecto.Changeset

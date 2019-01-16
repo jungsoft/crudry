@@ -4,7 +4,7 @@ defmodule Crudry.MixProject do
   def project do
     [
       app: :crudry,
-      version: "0.3.3",
+      version: "0.4.0",
       elixir: "~> 1.7",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -51,8 +51,8 @@ defmodule Crudry.MixProject do
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:inflex, "~> 1.10.0"},
       {:ecto, "~> 3.0"},
-      {:ecto_sql, "~> 3.0"},
-      {:postgrex, ">= 0.0.0"}
+      {:ecto_sql, "~> 3.0", only: :test},
+      {:postgrex, ">= 0.0.0", only: :test}
     ]
   end
 end
