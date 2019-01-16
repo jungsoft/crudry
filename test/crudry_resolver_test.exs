@@ -30,9 +30,9 @@ defmodule CrudryResolverTest do
     assert Resolver.get_test(%{id: 1}, @info) == {:ok, %Test{x: "123"}}
     assert Resolver.get_test(%{id: 0}, @info) == {:error, "Test not found."}
     assert Resolver.list_tests(%{}, @info) == {:ok, [1, 2, 3]}
-    assert Resolver.create_test(%{test: %{x: 2}}, @info) == {:ok, %Test{x: 2}}
-    assert Resolver.update_test(%{id: 3, test: %{x: 3}}, @info) == {:ok, %Test{x: 3}}
-    assert Resolver.update_test(%{id: 0, test: %{x: 3}}, @info) == {:error, "Test not found."}
+    assert Resolver.create_test(%{params: %{x: 2}}, @info) == {:ok, %Test{x: 2}}
+    assert Resolver.update_test(%{id: 3, params: %{x: 3}}, @info) == {:ok, %Test{x: 3}}
+    assert Resolver.update_test(%{id: 0, params: %{x: 3}}, @info) == {:error, "Test not found."}
     assert Resolver.delete_test(%{id: 2}, @info) == {:ok, :deleted}
     assert Resolver.delete_test(%{id: 0}, @info) == {:error, "Test not found."}
   end
@@ -42,7 +42,7 @@ defmodule CrudryResolverTest do
       Crudry.Resolver.generate_functions(Context, CrudryTest.Test, only: [:create, :list])
     end
 
-    assert ResolverOnly.create_test(%{test: %{x: 2}}, @info) == {:ok, %Test{x: 2}}
+    assert ResolverOnly.create_test(%{params: %{x: 2}}, @info) == {:ok, %Test{x: 2}}
     assert ResolverOnly.list_tests(%{}, @info) == {:ok, [1, 2, 3]}
     assert length(ResolverOnly.__info__(:functions)) == 3
 
@@ -50,8 +50,8 @@ defmodule CrudryResolverTest do
       Crudry.Resolver.generate_functions(Context, CrudryTest.Test, except: [:list, :delete])
     end
 
-    assert ResolverExcept.create_test(%{test: %{x: 2}}, @info) == {:ok, %Test{x: 2}}
-    assert ResolverExcept.update_test(%{id: 3, test: %{x: 3}}, @info) == {:ok, %Test{x: 3}}
+    assert ResolverExcept.create_test(%{params: %{x: 2}}, @info) == {:ok, %Test{x: 2}}
+    assert ResolverExcept.update_test(%{id: 3, params: %{x: 3}}, @info) == {:ok, %Test{x: 3}}
     assert length(ResolverExcept.__info__(:functions)) == 4
   end
 
@@ -61,7 +61,7 @@ defmodule CrudryResolverTest do
       Crudry.Resolver.generate_functions(Context, CrudryTest.Test)
     end
 
-    assert ResolverOnlyDefault.create_test(%{test: %{x: 2}}, @info) == {:ok, %Test{x: 2}}
+    assert ResolverOnlyDefault.create_test(%{params: %{x: 2}}, @info) == {:ok, %Test{x: 2}}
     assert ResolverOnlyDefault.list_tests(%{}, @info) == {:ok, [1, 2, 3]}
     assert length(ResolverOnlyDefault.__info__(:functions)) == 3
 
@@ -70,8 +70,8 @@ defmodule CrudryResolverTest do
       Crudry.Resolver.generate_functions(Context, CrudryTest.Test)
     end
 
-    assert ResolverExceptDefault.create_test(%{test: %{x: 2}}, @info) == {:ok, %Test{x: 2}}
-    assert ResolverExceptDefault.update_test(%{id: 3, test: %{x: 3}}, @info) == {:ok, %Test{x: 3}}
+    assert ResolverExceptDefault.create_test(%{params: %{x: 2}}, @info) == {:ok, %Test{x: 2}}
+    assert ResolverExceptDefault.update_test(%{id: 3, params: %{x: 3}}, @info) == {:ok, %Test{x: 3}}
     assert length(ResolverExceptDefault.__info__(:functions)) == 4
   end
 
@@ -80,14 +80,14 @@ defmodule CrudryResolverTest do
       Crudry.Resolver.default(except: [:update])
       Crudry.Resolver.generate_functions(Context, CrudryTest.Test)
 
-      def update_test(%{id: id, test: params}, _info) do
+      def update_test(%{id: id, params: params}, _info) do
         Context.get_test(id)
         |> nil_to_error(fn record -> Context.update_test_with_assocs(record, params, [:assoc]) end)
       end
     end
 
-    assert ResolverExceptUpdate.update_test(%{id: 3, test: %{x: 3}}, @info) == {:ok, %Test{x: 3, assocs: [:assoc]}}
-    assert ResolverExceptUpdate.update_test(%{id: 0, test: %{x: 3}}, @info) == {:error, "Test not found."}
+    assert ResolverExceptUpdate.update_test(%{id: 3, params: %{x: 3}}, @info) == {:ok, %Test{x: 3, assocs: [:assoc]}}
+    assert ResolverExceptUpdate.update_test(%{id: 0, params: %{x: 3}}, @info) == {:error, "Test not found."}
   end
 
   test "Camelized name in error message" do

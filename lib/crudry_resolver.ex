@@ -34,11 +34,11 @@ defmodule Crudry.Resolver do
           MyContext.list_my_schemas()
         end
 
-        def create_my_schema(%{my_schema: params}, _info) do
+        def create_my_schema(%{params: params}, _info) do
           MyContext.create_my_schema(params)
         end
 
-        def update_my_schema(%{id: id, my_schema: params}, _info) do
+        def update_my_schema(%{id: id, params: params}, _info) do
           MyContext.get_my_schema(id)
           |> nil_to_error(fn record -> MyContext.update_my_schema(record, params) end)
         end
@@ -67,7 +67,7 @@ defmodule Crudry.Resolver do
 
         Crudry.Resolver.generate_functions MyContext, MySchema, except: [:update]
 
-        def update_my_schema(%{id: id, my_schema: params}, _info) do
+        def update_my_schema(%{id: id, params: params}, _info) do
           MyContext.get_my_schema(id)
           |> nil_to_error(fn record -> MyContext.update_my_schema_with_assocs(record, params, [:assoc]) end)
         end
@@ -122,8 +122,8 @@ defmodule Crudry.Resolver do
 
       AccountsResolver.get_user(%{id: id}, info)
       AccountsResolver.list_users(_args, info)
-      AccountsResolver.crete_user(%{user: params}, info)
-      AccountsResolver.update_user(%{id: id, user: params}, info)
+      AccountsResolver.crete_user(%{params: params}, info)
+      AccountsResolver.update_user(%{id: id, params: params}, info)
       AccountsResolver.delete_user(%{id: id}, info)
       AccountsResolver.nil_to_error(result, func)
   """
