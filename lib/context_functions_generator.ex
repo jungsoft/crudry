@@ -2,7 +2,7 @@ defmodule ContextFunctionsGenerator do
   @moduledoc false
 
   def generate_function(:get, name, module, _opts) do
-    quote location: :keep do
+    quote do
       def unquote(:"get_#{name}")(id) do
         unquote(module)
         |> alias!(Repo).get(id)
@@ -17,7 +17,7 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:get!, name, module, _opts) do
-    quote location: :keep do
+    quote do
       def unquote(:"get_#{name}!")(id) do
         unquote(module)
         |> alias!(Repo).get!(id)
@@ -26,7 +26,7 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:list, name, module, _opts) do
-    quote location: :keep do
+    quote do
       def unquote(:"list_#{Inflex.pluralize(name)}")() do
         unquote(module)
         |> alias!(Repo).all()
@@ -41,7 +41,7 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:count, name, module, _opts) do
-    quote location: :keep do
+    quote do
       def unquote(:"count_#{Inflex.pluralize(name)}")(field \\ :id) do
         unquote(module)
         |> alias!(Repo).aggregate(:count, field)
@@ -50,7 +50,7 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:search, name, module, _opts) do
-    quote location: :keep do
+    quote do
       def unquote(:"search_#{Inflex.pluralize(name)}")(search_term) do
         module_fields = unquote(module).__schema__(:fields)
 
@@ -62,7 +62,7 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:filter, name, module, _opts) do
-    quote location: :keep do
+    quote do
       def unquote(:"filter_#{Inflex.pluralize(name)}")(filters) do
         unquote(module)
         |> Crudry.Query.filter(filters)
@@ -72,7 +72,7 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:create, name, module, opts) do
-    quote location: :keep do
+    quote do
       def unquote(:"create_#{name}")(attrs) do
         unquote(module)
         |> struct()
@@ -83,7 +83,7 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:update, name, module, opts) do
-    quote location: :keep do
+    quote do
       def unquote(:"update_#{name}")(%module{} = struct, attrs) do
         struct
         |> unquote(module).unquote(opts[:update])(attrs)
@@ -112,7 +112,7 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:check_assocs, _, _, _) do
-    quote location: :keep do
+    quote do
       defp unquote(:check_assocs)(changeset, nil), do: changeset
 
       defp unquote(:check_assocs)(changeset, constraints) when is_list(constraints) do
@@ -122,7 +122,7 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:delete, name, module, opts) do
-    quote location: :keep, bind_quoted: [module: module], unquote: true do
+    quote bind_quoted: [module: module], unquote: true do
       def unquote(:"delete_#{name}")(%module{} = struct) do
         struct
         |> Ecto.Changeset.change()
