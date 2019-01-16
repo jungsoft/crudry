@@ -11,7 +11,12 @@ The package can be installed by adding `crudry` to your list of dependencies in 
 ```elixir
 def deps do
   [
-    {:crudry, "~> 0.4.0"}
+    {:crudry, "~> 1.0.0"}
   ]
 end
 ```
+
+## Usage
+
+* [Context Generation](https://hexdocs.pm/crudry/Crudry.Context.html#module-usage)
+* [Resolver Generation](https://hexdocs.pm/crudry/Crudry.Resolver.html#module-usage)
