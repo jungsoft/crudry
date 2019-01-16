@@ -5,6 +5,7 @@ defmodule Crudry.Post do
   schema "posts" do
     field :title, :string
     belongs_to :user, Crudry.User
+    has_many :likes, Crudry.Like
 
     timestamps()
   end
