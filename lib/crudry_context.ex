@@ -145,6 +145,10 @@ defmodule Crudry.Context do
   Generates CRUD functions for the `schema_module`.
 
   Custom options can be given. To see the available options, refer to the documenation of `Crudry.Context.default/1`.
+  There is also one extra option that cannot be set by default:
+
+  `delete_constraints` - list of associations that must be empty to allow deletion.
+  `Ecto.Changeset.no_assoc_constraint` will be called for each association before deleting. Default to `[]`.
 
   ## Examples
 
@@ -181,10 +185,22 @@ defmodule Crudry.Context do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
     name = Helper.get_underscored_name(schema_module)
 
-    for func <- [:get, :get!, :list, :search, :filter, :count, :create, :update, :delete, :check_assocs] do
+    # Always generate nil_to_error function since it's used in the other generated functions
+    for func <- get_functions_to_be_generated(__CALLER__.module) do
       if func == :check_assocs || Helper.define_function?(func, opts[:only], opts[:except]) do
-        ContextFunctionsGenerator.generate_function(func, name, schema_module, opts[:create], opts[:update])
+        ContextFunctionsGenerator.generate_function(func, name, schema_module, opts)
       end
+    end
+  end
+
+  # Use an attribute in the caller's module to make sure the `check_assocs` function is only generated once per module.
+  defp get_functions_to_be_generated(module) do
+    functions = [:get, :get!, :list, :search, :filter, :count, :create, :update, :delete,]
+    if Module.get_attribute(module, :called) do
+      functions
+    else
+      Module.put_attribute(module, :called, true)
+      [:check_assocs | functions]
     end
   end
 
@@ -199,7 +215,8 @@ defmodule Crudry.Context do
       create: create_changeset || :changeset,
       update: update_changeset || :changeset,
       only: only || [],
-      except: except || []
+      except: except || [],
+      delete_constraints: []
     ]
   end
 end

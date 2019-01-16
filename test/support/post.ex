@@ -1,4 +1,3 @@
-
 defmodule Crudry.Post do
   use Ecto.Schema
   import Ecto.Changeset

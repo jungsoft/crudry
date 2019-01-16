@@ -2,12 +2,7 @@ defmodule CrudryContextTest do
   use ExUnit.Case
   doctest Crudry.Context
 
-  # Not required, but helpful for test brevity:
   alias Crudry.Repo
-  setup do
-    # Explicitly get a connection before each test
-    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
-  end
 
   @user %{username: "Chuck Norris"}
   @post %{title: "Chuck Norris threw a grenade and killed 50 people, then it exploded."}
@@ -48,18 +43,19 @@ defmodule CrudryContextTest do
     assert Context.delete_test(2) == {:ok, :deleted}
   end
 
-  test "return changeset when deleting a parent record with childrens associated" do
-    defmodule Context do
-      alias Crudry.User
-      alias Crudry.Post
-  
-      Crudry.Context.generate_functions(User)
+  test "return changeset error when deleting a parent record with childrens associated constraint" do
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
+
+    defmodule ContextDelete do
+      alias Crudry.{User, Post}
+
+      Crudry.Context.generate_functions(User, delete_constraints: [:posts])
       Crudry.Context.generate_functions(Post)
     end
 
-    assert {:ok, %{} = user} = Context.create_user(@user)
-    assert {:ok, %{} = post} = Context.create_post(%{title: @post.title, user_id: user.id})
-    assert {:error, %Ecto.Changeset{}} = Context.delete_user(user, :posts)
+    assert {:ok, %{} = user} = ContextDelete.create_user(@user)
+    assert {:ok, %{} = post} = ContextDelete.create_post(%{title: @post.title, user_id: user.id})
+    assert {:error, %Ecto.Changeset{}} = ContextDelete.delete_user(user)
   end
 
 
