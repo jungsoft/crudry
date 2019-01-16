@@ -62,6 +62,43 @@ defmodule CrudryContextTest do
     assert {:error, %Ecto.Changeset{}} = Context.delete_user(user, :posts)
   end
 
+
+  test "return changeset when deleting a parent record with a list of childrens associated" do
+    defmodule Context do
+      alias Crudry.Like
+      alias Crudry.User
+      alias Crudry.Post
+  
+      Crudry.Context.generate_functions(User)
+      Crudry.Context.generate_functions(Post)
+      Crudry.Context.generate_functions(Like)
+    end
+
+    assert {:ok, %{} = user} = Context.create_user(@user)
+    assert {:ok, %{} = post} = Context.create_post(%{title: @post.title, user_id: user.id})
+    assert {:ok, %{} = like} = Context.create_like(%{post_id: post.id, user_id: user.id})
+    assert {:error, %Ecto.Changeset{}} = Context.delete_user(user, [:posts, :likes])
+  end
+
+  test "delete a parent record after deleting childrens associated" do
+    defmodule Context do
+      alias Crudry.Like
+      alias Crudry.User
+      alias Crudry.Post
+  
+      Crudry.Context.generate_functions(User)
+      Crudry.Context.generate_functions(Post)
+      Crudry.Context.generate_functions(Like)
+    end
+
+    assert {:ok, %{} = user} = Context.create_user(@user)
+    assert {:ok, %{} = post} = Context.create_post(%{title: @post.title, user_id: user.id})
+    assert {:ok, %{} = like} = Context.create_like(%{post_id: post.id, user_id: user.id})
+    assert {:ok, %{}} = Context.delete_like(like.id)
+    assert {:ok, %{}} = Context.delete_post(post.id)
+    assert {:ok, %{}} = Context.delete_user(user.id)
+  end
+
   test "allow defining of create changeset" do
     defmodule ContextCreate do
       alias CrudryTest.Repo
@@ -74,7 +111,7 @@ defmodule CrudryContextTest do
   end
 
   test "allow defining of update changeset" do
-    defmodule ContextUpdate:posts do
+    defmodule ContextUpdate do
       alias CrudryTest.Repo
 
       Crudry.Context.generate_functions(CrudryTest.Test, update: :update_changeset)

@@ -23,7 +23,7 @@ defmodule Crudry.MixProject do
   defp aliases do
     [
       # Ensures database is reset before tests are run
-      test: ["ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["ecto.drop", "ecto.create --quiet", "ecto.migrate", "test"]
     ]
   end
 
