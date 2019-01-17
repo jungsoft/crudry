@@ -50,7 +50,7 @@ defmodule ResolverFunctionsGenerator do
     quote do
       def unquote(:nil_to_error)(result, name, func) do
         case result do
-          nil -> {:error, "#{Macro.camelize(name)} not found."}
+          nil -> {:error, "#{name} not found."}
           %{} = record -> func.(record)
         end
       end
