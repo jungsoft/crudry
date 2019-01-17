@@ -40,12 +40,12 @@ defmodule Crudry.Resolver do
 
         def update_my_schema(%{id: id, params: params}, _info) do
           MyContext.get_my_schema(id)
-          |> nil_to_error("my_schema", fn record -> MyContext.update_my_schema(record, params) end)
+          |> nil_to_error("My Schema", fn record -> MyContext.update_my_schema(record, params) end)
         end
 
         def delete_my_schema(%{id: id}, _info) do
           MyContext.get_my_schema(id)
-          |> nil_to_error("my_schema", fn record -> MyContext.delete_my_schema(record) end)
+          |> nil_to_error("My Schema", fn record -> MyContext.delete_my_schema(record) end)
         end
 
         # If `result` is `nil`, return an error. Otherwise, apply `func` to the `result`.
@@ -69,7 +69,7 @@ defmodule Crudry.Resolver do
 
         def update_my_schema(%{id: id, params: params}, _info) do
           MyContext.get_my_schema(id)
-          |> nil_to_error("my_schema", fn record -> MyContext.update_my_schema_with_assocs(record, params, [:assoc]) end)
+          |> nil_to_error("My Schema", fn record -> MyContext.update_my_schema_with_assocs(record, params, [:assoc]) end)
         end
       end
 
