@@ -27,29 +27,29 @@ defmodule Crudry.Resolver do
 
         def get_my_schema(%{id: id}, _info) do
           MyContext.get_my_schema(id)
-          |> nil_to_error(fn record -> {:ok, record} end)
+          |> nil_to_error("my_schema", fn record -> {:ok, record} end)
         end
 
         def list_my_schemas(_args, _info) do
           MyContext.list_my_schemas()
         end
 
-        def create_my_schema(%{params: params}, _info) do
+        def create_my_schema(%{my_schema: params}, _info) do
           MyContext.create_my_schema(params)
         end
 
-        def update_my_schema(%{id: id, params: params}, _info) do
+        def update_my_schema(%{id: id, my_schema: params}, _info) do
           MyContext.get_my_schema(id)
-          |> nil_to_error(fn record -> MyContext.update_my_schema(record, params) end)
+          |> nil_to_error("my_schema", fn record -> MyContext.update_my_schema(record, params) end)
         end
 
         def delete_my_schema(%{id: id}, _info) do
           MyContext.get_my_schema(id)
-          |> nil_to_error(fn record -> MyContext.delete_my_schema(record) end)
+          |> nil_to_error("my_schema", fn record -> MyContext.delete_my_schema(record) end)
         end
 
         # If `result` is `nil`, return an error. Otherwise, apply `func` to the `result`.
-        def nil_to_error(result, func) do
+        def nil_to_error(result, "my_schema", func) do
           case result do
             nil -> {:error, "MySchema not found."}
             %{} = record -> func.(record)
@@ -67,9 +67,9 @@ defmodule Crudry.Resolver do
 
         Crudry.Resolver.generate_functions MyContext, MySchema, except: [:update]
 
-        def update_my_schema(%{id: id, params: params}, _info) do
+        def update_my_schema(%{id: id, my_schema: params}, _info) do
           MyContext.get_my_schema(id)
-          |> nil_to_error(fn record -> MyContext.update_my_schema_with_assocs(record, params, [:assoc]) end)
+          |> nil_to_error("my_schema", fn record -> MyContext.update_my_schema_with_assocs(record, params, [:assoc]) end)
         end
       end
 
@@ -125,7 +125,7 @@ defmodule Crudry.Resolver do
       AccountsResolver.crete_user(%{params: params}, info)
       AccountsResolver.update_user(%{id: id, params: params}, info)
       AccountsResolver.delete_user(%{id: id}, info)
-      AccountsResolver.nil_to_error(result, func)
+      AccountsResolver.nil_to_error(result, "my_schema", func)
   """
   defmacro generate_functions(context, schema_module, opts \\ []) do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
