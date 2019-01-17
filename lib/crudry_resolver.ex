@@ -34,11 +34,11 @@ defmodule Crudry.Resolver do
           MyContext.list_my_schemas()
         end
 
-        def create_my_schema(%{my_schema: params}, _info) do
+        def create_my_schema(%{params: params}, _info) do
           MyContext.create_my_schema(params)
         end
 
-        def update_my_schema(%{id: id, my_schema: params}, _info) do
+        def update_my_schema(%{id: id, params: params}, _info) do
           MyContext.get_my_schema(id)
           |> nil_to_error("my_schema", fn record -> MyContext.update_my_schema(record, params) end)
         end
@@ -67,7 +67,7 @@ defmodule Crudry.Resolver do
 
         Crudry.Resolver.generate_functions MyContext, MySchema, except: [:update]
 
-        def update_my_schema(%{id: id, my_schema: params}, _info) do
+        def update_my_schema(%{id: id, params: params}, _info) do
           MyContext.get_my_schema(id)
           |> nil_to_error("my_schema", fn record -> MyContext.update_my_schema_with_assocs(record, params, [:assoc]) end)
         end
