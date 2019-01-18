@@ -3,9 +3,9 @@ defmodule Crudry.User do
   import Ecto.Changeset
 
   schema "users" do
-    field :username, :string
-    has_many :posts, Crudry.Post
-    has_many :likes, Crudry.Like
+    field(:username, :string)
+    has_many(:posts, Crudry.Post)
+    has_many(:likes, Crudry.Like)
 
     timestamps()
   end

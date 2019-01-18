@@ -4,7 +4,7 @@ defmodule Crudry.MixProject do
   def project do
     [
       app: :crudry,
-      version: "1.0.0",
+      version: "1.0.1",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -12,7 +12,7 @@ defmodule Crudry.MixProject do
       source_url: "https://github.com/gabrielpra1/crudry",
       description: "Crudry is a library for DRYing CRUD.",
       package: package(),
-      elixirc_paths: elixirc_paths(Mix.env),
+      elixirc_paths: elixirc_paths(Mix.env()),
       aliases: aliases()
     ]
   end

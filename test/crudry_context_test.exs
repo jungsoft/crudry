@@ -22,22 +22,28 @@ defmodule CrudryContextTest do
     assert Context.list_tests() == [1, 2, 3]
 
     # How to test these?
-    #assert Context.list_tests(%{limit: 4}) == 2
-    #assert Context.search_tests("asd") == 2
-    #assert Context.filter_tests(%{id: [3,6]}) == 2
+    # assert Context.list_tests(%{limit: 4}) == 2
+    # assert Context.search_tests("asd") == 2
+    # assert Context.filter_tests(%{id: [3,6]}) == 2
 
     assert Context.count_tests(:id) == 6
 
     assert Context.get_test(1) == %Test{x: "123"}
     assert Context.get_test!(3) == %Test{x: "123", bang: true}
 
-    assert Context.get_test_with_assocs(1, [:assoc1, :assoc2]) == %Test{x: "123", assocs: [:assoc1, :assoc2]}
+    assert Context.get_test_with_assocs(1, [:assoc1, :assoc2]) == %Test{
+             x: "123",
+             assocs: [:assoc1, :assoc2]
+           }
 
     assert Context.update_test(struct(Test), %{x: 3}) == {:ok, %Test{x: 3}}
     assert Context.update_test(3, %{x: 3}) == {:ok, %Test{x: 3}}
 
-    assert Context.update_test_with_assocs(struct(Test), %{x: 3}, [:assocs]) == {:ok, %Test{x: 3, assocs: [:assocs]}}
-    assert Context.update_test_with_assocs(3, %{x: 3}, [:assocs]) == {:ok, %Test{x: 3, assocs: [:assocs]}}
+    assert Context.update_test_with_assocs(struct(Test), %{x: 3}, [:assocs]) ==
+             {:ok, %Test{x: 3, assocs: [:assocs]}}
+
+    assert Context.update_test_with_assocs(3, %{x: 3}, [:assocs]) ==
+             {:ok, %Test{x: 3, assocs: [:assocs]}}
 
     assert Context.delete_test(struct(Test)) == {:ok, :deleted}
     assert Context.delete_test(2) == {:ok, :deleted}
@@ -58,7 +64,6 @@ defmodule CrudryContextTest do
     assert {:error, %Ecto.Changeset{}} = ContextDelete.delete_user(user)
   end
 
-
   test "return changeset error when deleting a parent record with childrens associated constraint" do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
 
@@ -73,8 +78,13 @@ defmodule CrudryContextTest do
     end
 
     assert {:ok, %{} = user} = ContextDeleteList.create_user(@user)
-    assert {:ok, %{} = post} = ContextDeleteList.create_post(%{title: @post.title, user_id: user.id})
-    assert {:ok, %{} = like} = ContextDeleteList.create_like(%{post_id: post.id, user_id: user.id})
+
+    assert {:ok, %{} = post} =
+             ContextDeleteList.create_post(%{title: @post.title, user_id: user.id})
+
+    assert {:ok, %{} = like} =
+             ContextDeleteList.create_like(%{post_id: post.id, user_id: user.id})
+
     assert {:error, %Ecto.Changeset{}} = ContextDeleteList.delete_user(user)
 
     # Delete successfully after deleting children

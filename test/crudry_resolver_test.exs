@@ -71,7 +71,10 @@ defmodule CrudryResolverTest do
     end
 
     assert ResolverExceptDefault.create_test(%{params: %{x: 2}}, @info) == {:ok, %Test{x: 2}}
-    assert ResolverExceptDefault.update_test(%{id: 3, params: %{x: 3}}, @info) == {:ok, %Test{x: 3}}
+
+    assert ResolverExceptDefault.update_test(%{id: 3, params: %{x: 3}}, @info) ==
+             {:ok, %Test{x: 3}}
+
     assert length(ResolverExceptDefault.__info__(:functions)) == 4
   end
 
@@ -82,12 +85,17 @@ defmodule CrudryResolverTest do
 
       def update_test(%{id: id, params: params}, _info) do
         Context.get_test(id)
-        |> nil_to_error("test", fn record -> Context.update_test_with_assocs(record, params, [:assoc]) end)
+        |> nil_to_error("test", fn record ->
+          Context.update_test_with_assocs(record, params, [:assoc])
+        end)
       end
     end
 
-    assert ResolverExceptUpdate.update_test(%{id: 3, params: %{x: 3}}, @info) == {:ok, %Test{x: 3, assocs: [:assoc]}}
-    assert ResolverExceptUpdate.update_test(%{id: 0, params: %{x: 3}}, @info) == {:error, "Test not found."}
+    assert ResolverExceptUpdate.update_test(%{id: 3, params: %{x: 3}}, @info) ==
+             {:ok, %Test{x: 3, assocs: [:assoc]}}
+
+    assert ResolverExceptUpdate.update_test(%{id: 0, params: %{x: 3}}, @info) ==
+             {:error, "Test not found."}
   end
 
   test "Camelized name in error message" do
@@ -95,7 +103,8 @@ defmodule CrudryResolverTest do
       Crudry.Resolver.generate_functions(CamelizedContext, CrudryTest.CamelizedSchemaName)
     end
 
-    assert CamelizedResolver.get_camelized_schema_name(%{id: 0}, @info) == {:error, "CamelizedSchemaName not found."}
+    assert CamelizedResolver.get_camelized_schema_name(%{id: 0}, @info) ==
+             {:error, "CamelizedSchemaName not found."}
   end
 
   test "Generate only one nil_to_error function" do
@@ -108,5 +117,4 @@ defmodule CrudryResolverTest do
     # Not sure how to test for warnings, so for now just let the test pass and check if there are no warnings manually.
     assert true
   end
-
 end

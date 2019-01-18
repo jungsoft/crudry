@@ -45,9 +45,9 @@ defmodule Schema do
       use Ecto.Schema
 
       embedded_schema do
-        field :x, :string, default: "123"
-        field :bang, :boolean, default: false
-        field :assocs, {:array, :string}, default: []
+        field(:x, :string, default: "123")
+        field(:bang, :boolean, default: false)
+        field(:assocs, {:array, :string}, default: [])
       end
 
       def changeset(test, attrs) do
@@ -80,6 +80,6 @@ defmodule CrudryTest.Category do
   use Schema
 end
 
-{:ok, _pid} = Crudry.Repo.start_link
+{:ok, _pid} = Crudry.Repo.start_link()
 Ecto.Adapters.SQL.Sandbox.mode(Crudry.Repo, :manual)
 ExUnit.start()

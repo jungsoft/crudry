@@ -58,6 +58,7 @@ defmodule Crudry.Context do
 
         def filter_my_schemas(filters) do
           Crudry.Query.filter(MySchema, filters)
+          |> Repo.all()
         end
 
         def create_my_schema(attrs) do
@@ -219,6 +220,7 @@ defmodule Crudry.Context do
   # Use an attribute in the caller's module to make sure the `check_assocs` function is only generated once per module.
   defp get_functions_to_be_generated(module) do
     functions = [:get, :get!, :list, :search, :filter, :count, :create, :update, :delete]
+
     if Module.get_attribute(module, :called) do
       functions
     else

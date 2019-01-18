@@ -3,8 +3,8 @@ defmodule Crudry.Like do
   import Ecto.Changeset
 
   schema "likes" do
-    belongs_to :user, Crudry.User
-    belongs_to :post, Crudry.Post
+    belongs_to(:user, Crudry.User)
+    belongs_to(:post, Crudry.Post)
 
     timestamps()
   end
