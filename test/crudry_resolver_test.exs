@@ -82,7 +82,7 @@ defmodule CrudryResolverTest do
 
       def update_test(%{id: id, params: params}, _info) do
         Context.get_test(id)
-        |> nil_to_error(fn record -> Context.update_test_with_assocs(record, params, [:assoc]) end)
+        |> nil_to_error("test", fn record -> Context.update_test_with_assocs(record, params, [:assoc]) end)
       end
     end
 
