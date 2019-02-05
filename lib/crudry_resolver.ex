@@ -87,6 +87,8 @@ defmodule Crudry.Resolver do
     * `:except` - list of functions to not be generated. If not empty, only functions not specified
     in this list will be generated. Default to `[]`.
 
+    * `list_opts`- map of options to apply for list query like :limit, :offset, :sorting_order, :asc and :order_by, see more in Crudry.Query
+
     The accepted values for `:only` and `:except` are: `[:get, :list, :create, :update, :delete]`.
 
   ## Examples
@@ -96,8 +98,16 @@ defmodule Crudry.Resolver do
 
       iex> Crudry.Resolver.default except: [:get!, :list, :delete]
       :ok
+
+      iex> Crudry.Resolver.default list_opts: %{order_by: :id}
+      :ok
   """
   defmacro default(opts) do
+    case opts[:list_opts] do
+      {_map, _line, list_opts} -> Module.put_attribute(__CALLER__.module, :list_opts, Map.new(list_opts))
+      nil -> nil
+    end
+
     Module.put_attribute(__CALLER__.module, :only, opts[:only])
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
   end
@@ -135,7 +145,7 @@ defmodule Crudry.Resolver do
     # Always generate nil_to_error function since it's used in the other generated functions
     for func <- get_functions_to_be_generated(__CALLER__.module) do
       if func == :nil_to_error || Helper.define_function?(func, opts[:only], opts[:except]) do
-        ResolverFunctionsGenerator.generate_function(func, name, context)
+        ResolverFunctionsGenerator.generate_function(func, name, context, opts)
       end
     end
   end
@@ -156,10 +166,12 @@ defmodule Crudry.Resolver do
   defp load_default(module) do
     only = Module.get_attribute(module, :only)
     except = Module.get_attribute(module, :except)
+    list_opts = Module.get_attribute(module, :list_opts)
 
     [
       only: only || [],
-      except: except || []
+      except: except || [],
+      list_opts: list_opts || %{}
     ]
   end
 end
