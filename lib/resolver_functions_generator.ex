@@ -15,8 +15,7 @@ defmodule ResolverFunctionsGenerator do
 
     quote do
       def unquote(:"list_#{pluralized_name}")(_args, _info) do
-        {:ok,
-         apply(unquote(context), String.to_existing_atom("list_#{unquote(pluralized_name)}"), [])}
+        {:ok, apply(unquote(context), String.to_existing_atom("list_#{unquote(pluralized_name)}"), [%{order_by: :id}])}
       end
     end
   end
