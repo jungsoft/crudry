@@ -27,7 +27,7 @@ defmodule Crudry.Resolver do
 
         def get_my_schema(%{id: id}, _info) do
           MyContext.get_my_schema(id)
-          |> nil_to_error("My Schema", fn record -> {:ok, record} end)
+          |> nil_to_error("my_schema", fn record -> {:ok, record} end)
         end
 
         def list_my_schemas(_args, _info) do
@@ -40,18 +40,18 @@ defmodule Crudry.Resolver do
 
         def update_my_schema(%{id: id, params: params}, _info) do
           MyContext.get_my_schema(id)
-          |> nil_to_error("My Schema", fn record -> MyContext.update_my_schema(record, params) end)
+          |> nil_to_error("my_schema", fn record -> MyContext.update_my_schema(record, params) end)
         end
 
         def delete_my_schema(%{id: id}, _info) do
           MyContext.get_my_schema(id)
-          |> nil_to_error("My Schema", fn record -> MyContext.delete_my_schema(record) end)
+          |> nil_to_error("my_schema", fn record -> MyContext.delete_my_schema(record) end)
         end
 
         # If `result` is `nil`, return an error. Otherwise, apply `func` to the `result`.
         def nil_to_error(result, name, func) do
           case result do
-            nil -> {:error, "\#{name} not found."}
+            nil -> {:error, "\#{Macro.camelize(name)} not found."}
             %{} = record -> func.(record)
           end
         end
@@ -143,6 +143,7 @@ defmodule Crudry.Resolver do
   # Use an attribute in the caller's module to make sure the `nil_to_error` function is only generated once per module.
   defp get_functions_to_be_generated(module) do
     functions = [:get, :list, :create, :update, :delete]
+
     if Module.get_attribute(module, :called) do
       functions
     else

@@ -15,7 +15,8 @@ defmodule ResolverFunctionsGenerator do
 
     quote do
       def unquote(:"list_#{pluralized_name}")(_args, _info) do
-        {:ok, apply(unquote(context), String.to_existing_atom("list_#{unquote(pluralized_name)}"), [])}
+        {:ok,
+         apply(unquote(context), String.to_existing_atom("list_#{unquote(pluralized_name)}"), [])}
       end
     end
   end
@@ -32,7 +33,12 @@ defmodule ResolverFunctionsGenerator do
     quote do
       def unquote(:"update_#{name}")(%{id: id, params: params}, _info) do
         apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id])
-        |> nil_to_error(unquote(name), fn record -> apply(unquote(context), String.to_existing_atom("update_#{unquote(name)}"), [record, params]) end)
+        |> nil_to_error(unquote(name), fn record ->
+          apply(unquote(context), String.to_existing_atom("update_#{unquote(name)}"), [
+            record,
+            params
+          ])
+        end)
       end
     end
   end
@@ -41,7 +47,9 @@ defmodule ResolverFunctionsGenerator do
     quote do
       def unquote(:"delete_#{name}")(%{id: id}, _info) do
         apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id])
-        |> nil_to_error(unquote(name), fn record -> apply(unquote(context), String.to_existing_atom("delete_#{unquote(name)}"), [record]) end)
+        |> nil_to_error(unquote(name), fn record ->
+          apply(unquote(context), String.to_existing_atom("delete_#{unquote(name)}"), [record])
+        end)
       end
     end
   end

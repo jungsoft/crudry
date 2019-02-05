@@ -116,7 +116,9 @@ defmodule ContextFunctionsGenerator do
       defp unquote(:check_assocs)(changeset, nil), do: changeset
 
       defp unquote(:check_assocs)(changeset, constraints) when is_list(constraints) do
-        Enum.reduce(constraints, changeset, fn i, acc -> Ecto.Changeset.no_assoc_constraint(acc, i) end)
+        Enum.reduce(constraints, changeset, fn i, acc ->
+          Ecto.Changeset.no_assoc_constraint(acc, i)
+        end)
       end
     end
   end
