@@ -22,6 +22,7 @@ defmodule Crudry.Query do
       Crudry.Query.list(MySchema, [limit: 10])
       Crudry.Query.list(MySchema, [limit: 10, offset: 3, sorting_order: :desc, order_by: :value])
       Crudry.Query.list(MySchema, [order_by: "value"])
+      Crudry.Query.list(MySchema, [order_by: :value])
   """
   def list(initial_query, opts \\ []) do
     limit = Keyword.get(opts, :limit, nil)
