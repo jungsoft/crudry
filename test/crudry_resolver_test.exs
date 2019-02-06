@@ -3,6 +3,16 @@ defmodule CrudryResolverTest do
   doctest Crudry.Resolver
 
   alias CrudryTest.Test
+  alias Crudry.Repo
+
+  defmodule Users do
+    alias Crudry.User
+
+    require Crudry.Context
+    alias Crudry.Context
+
+    Context.generate_functions(User)
+  end
 
   defmodule Context do
     alias CrudryTest.Repo
@@ -21,6 +31,7 @@ defmodule CrudryResolverTest do
   end
 
   @info %{}
+  @userparams %{params: %{username: "test"}}
 
   test "creates the CRUD functions" do
     defmodule Resolver do
@@ -76,6 +87,39 @@ defmodule CrudryResolverTest do
              {:ok, %Test{x: 3}}
 
     assert length(ResolverExceptDefault.__info__(:functions)) == 4
+  end
+
+  test "set default options for list" do
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
+
+    defmodule ResolverListOptionsDefault do
+      Crudry.Resolver.default list_opts: [order_by: :id, sorting_order: :desc]
+      Crudry.Resolver.generate_functions(Users, User)
+    end
+    ResolverListOptionsDefault.create_user(@userparams, @info)
+    ResolverListOptionsDefault.create_user(@userparams, @info)
+    ResolverListOptionsDefault.create_user(@userparams, @info)
+    ResolverListOptionsDefault.create_user(@userparams, @info)
+
+    {:ok, user_list} = ResolverListOptionsDefault.list_users(%{}, @info)
+    id_list = Enum.map(user_list, &(&1.id))
+    assert List.first(id_list) > List.last(id_list)
+  end
+
+  test "set options for list" do
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
+
+    defmodule ResolverListOptions do
+      Crudry.Resolver.generate_functions(Users, User, list_opts: [order_by: :id, sorting_order: :desc])
+    end
+    ResolverListOptions.create_user(@userparams, @info)
+    ResolverListOptions.create_user(@userparams, @info)
+    ResolverListOptions.create_user(@userparams, @info)
+    ResolverListOptions.create_user(@userparams, @info)
+
+    {:ok, user_list} = ResolverListOptions.list_users(%{}, @info)
+    id_list = Enum.map(user_list, &(&1.id))
+    assert List.first(id_list) > List.last(id_list)
   end
 
   test "create custom update using nil_to_error" do
