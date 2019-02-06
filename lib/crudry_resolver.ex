@@ -103,13 +103,9 @@ defmodule Crudry.Resolver do
       :ok
   """
   defmacro default(opts) do
-    case opts[:list_opts] do
-      {_map, _line, list_opts} -> Module.put_attribute(__CALLER__.module, :list_opts, Map.new(list_opts))
-      nil -> nil
-    end
-
     Module.put_attribute(__CALLER__.module, :only, opts[:only])
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
+    Module.put_attribute(__CALLER__.module, :list_opts, opts[:list_opts])
   end
 
   @doc """
@@ -166,7 +162,7 @@ defmodule Crudry.Resolver do
   defp load_default(module) do
     only = Module.get_attribute(module, :only)
     except = Module.get_attribute(module, :except)
-    list_opts = Module.get_attribute(module, :list_opts)
+    list_opts = module |> Module.get_attribute(:list_opts) |> get_list_opts
 
     [
       only: only || [],
@@ -174,4 +170,7 @@ defmodule Crudry.Resolver do
       list_opts: list_opts || %{}
     ]
   end
+
+  defp get_list_opts({_map, _line, list_opts}), do: Map.new(list_opts)
+  defp get_list_opts(opts), do: opts
 end
