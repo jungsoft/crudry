@@ -15,7 +15,7 @@ defmodule Crudry.Query do
   * `limit`: defaults to not limiting
   * `offset`: defaults to `0`
   * `sorting_order`: defaults to `:asc` (only works if there is also a `order_by` specified)
-  * `order_by`: defaults to nothing
+  * `order_by`: defaults to not ordering
 
   ## Examples
 

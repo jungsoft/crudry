@@ -87,7 +87,7 @@ defmodule Crudry.Resolver do
     * `:except` - list of functions to not be generated. If not empty, only functions not specified
     in this list will be generated. Default to `[]`.
 
-    * `list_opts`- map of options to apply for list query like :limit, :offset, :sorting_order, :asc and :order_by, see more in Crudry.Query
+    * `list_opts`- * options for the `list` function. See available options in `Crudry.Query.list/2`. Default to `%{}`.
 
     The accepted values for `:only` and `:except` are: `[:get, :list, :create, :update, :delete]`.
 
