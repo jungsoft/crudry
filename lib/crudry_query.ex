@@ -19,15 +19,15 @@ defmodule Crudry.Query do
 
   ## Examples
 
-      Crudry.Query.list(MySchema, %{limit: 10})
-      Crudry.Query.list(MySchema, %{limit: 10, offset: 3, sorting_order: :desc, order_by: :value})
-      Crudry.Query.list(MySchema, %{order_by: "value"})
+      Crudry.Query.list(MySchema, [limit: 10])
+      Crudry.Query.list(MySchema, [limit: 10, offset: 3, sorting_order: :desc, order_by: :value])
+      Crudry.Query.list(MySchema, [order_by: "value"])
   """
-  def list(initial_query, opts \\ %{}) do
-    limit = Map.get(opts, :limit, nil)
-    offset = Map.get(opts, :offset, 0)
-    sorting_order = Map.get(opts, :sorting_order, :asc)
-    order_by = Map.get(opts, :order_by)
+  def list(initial_query, opts \\ []) do
+    limit = Keyword.get(opts, :limit, nil)
+    offset = Keyword.get(opts, :offset, 0)
+    sorting_order = Keyword.get(opts, :sorting_order, :asc)
+    order_by = Keyword.get(opts, :order_by)
     order = if order_by, do: [{sorting_order, to_atom(order_by)}], else: []
 
     initial_query

@@ -87,7 +87,7 @@ defmodule Crudry.Resolver do
     * `:except` - list of functions to not be generated. If not empty, only functions not specified
     in this list will be generated. Default to `[]`.
 
-    * `list_opts`- * options for the `list` function. See available options in `Crudry.Query.list/2`. Default to `%{}`.
+    * `list_opts` - options for the `list` function. See available options in `Crudry.Query.list/2`. Default to `[]`.
 
     The accepted values for `:only` and `:except` are: `[:get, :list, :create, :update, :delete]`.
 
@@ -99,7 +99,7 @@ defmodule Crudry.Resolver do
       iex> Crudry.Resolver.default except: [:get!, :list, :delete]
       :ok
 
-      iex> Crudry.Resolver.default list_opts: %{order_by: :id}
+      iex> Crudry.Resolver.default list_opts: [order_by: :id]
       :ok
   """
   defmacro default(opts) do
@@ -162,15 +162,12 @@ defmodule Crudry.Resolver do
   defp load_default(module) do
     only = Module.get_attribute(module, :only)
     except = Module.get_attribute(module, :except)
-    list_opts = module |> Module.get_attribute(:list_opts) |> get_list_opts
+    list_opts = Module.get_attribute(module, :list_opts)
 
     [
       only: only || [],
       except: except || [],
-      list_opts: list_opts || %{}
+      list_opts: list_opts || []
     ]
   end
-
-  defp get_list_opts({_map, _line, list_opts}), do: Map.new(list_opts)
-  defp get_list_opts(opts), do: opts
 end
