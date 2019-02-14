@@ -17,4 +17,10 @@ defmodule Crudry.Post do
     |> validate_required([:title, :user_id])
     |> foreign_key_constraint(:user_id)
   end
+
+  def nested_changeset(post, attrs) do
+    post
+    |> changeset(attrs)
+    |> cast_assoc(:likes, with: &Crudry.Like.changeset/2)
+  end
 end
