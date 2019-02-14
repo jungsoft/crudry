@@ -29,16 +29,13 @@ defmodule Crudry.Query do
     offset = Keyword.get(opts, :offset, 0)
     sorting_order = Keyword.get(opts, :sorting_order, :asc)
     order_by = Keyword.get(opts, :order_by)
-    order = if order_by, do: [{sorting_order, to_atom(order_by)}], else: []
+    order = parse_order_by_args(sorting_order, order_by)
 
     initial_query
     |> limit(^limit)
     |> offset(^offset)
     |> order_by(^order)
   end
-
-  defp to_atom(value) when is_atom(value), do: value
-  defp to_atom(value) when is_binary(value), do: String.to_atom(value)
 
   @doc """
   Searches for the `search_term` in the given `fields`.
@@ -84,4 +81,11 @@ defmodule Crudry.Query do
         )
     end)
   end
+
+  defp parse_order_by_args(_, nil), do: []
+  defp parse_order_by_args(_, order_by) when is_list(order_by), do: order_by
+  defp parse_order_by_args(sorting_order, order_by), do: [{sorting_order, to_atom(order_by)}]
+
+  defp to_atom(value) when is_atom(value), do: value
+  defp to_atom(value) when is_binary(value), do: String.to_atom(value)
 end

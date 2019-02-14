@@ -14,6 +14,15 @@ defmodule CrudryResolverTest do
     Context.generate_functions(User)
   end
 
+  defmodule Posts do
+    alias Crudry.Post
+
+    require Crudry.Context
+    alias Crudry.Context
+
+    Context.generate_functions(Post)
+  end
+
   defmodule Context do
     alias CrudryTest.Repo
     alias CrudryTest.Test
@@ -110,16 +119,37 @@ defmodule CrudryResolverTest do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
 
     defmodule ResolverListOptions do
-      Crudry.Resolver.generate_functions(Users, User, list_opts: [order_by: :id, sorting_order: :desc])
+      Crudry.Resolver.generate_functions(Users, User, list_opts: [order_by: :id, sorting_order: :asc])
+      Crudry.Resolver.generate_functions(Posts, Post, list_opts: [order_by: [:user_id, :title]])
     end
+
     ResolverListOptions.create_user(@userparams, @info)
     ResolverListOptions.create_user(@userparams, @info)
     ResolverListOptions.create_user(@userparams, @info)
     ResolverListOptions.create_user(@userparams, @info)
 
     {:ok, user_list} = ResolverListOptions.list_users(%{}, @info)
+
+    first_user_id = List.first(user_list) |> Map.get(:id)
+    last_user_id = List.last(user_list) |> Map.get(:id)
+    first_post_title = "Post A"
+    last_post_title = "Post B"
+
+    ResolverListOptions.create_post(%{params: %{user_id: last_user_id, title: last_post_title}}, @info)
+    ResolverListOptions.create_post(%{params: %{user_id: last_user_id, title: first_post_title}}, @info)
+    ResolverListOptions.create_post(%{params: %{user_id: first_user_id, title: last_post_title}}, @info)
+    ResolverListOptions.create_post(%{params: %{user_id: first_user_id, title: first_post_title}}, @info)
+
+    {:ok, post_list} = ResolverListOptions.list_posts(%{}, @info)
+
     id_list = Enum.map(user_list, &(&1.id))
-    assert List.first(id_list) > List.last(id_list)
+    assert List.first(id_list) < List.last(id_list)
+    assert [
+      %{user_id: first_user_id, title: first_post_title},
+      %{user_id: first_user_id, title: last_post_title},
+      %{user_id: last_user_id, title: first_post_title},
+      %{user_id: last_user_id, title: last_post_title}
+    ] == Enum.map(post_list, & Map.take(&1, [:user_id, :title]))
   end
 
   test "create custom update using nil_to_error" do
