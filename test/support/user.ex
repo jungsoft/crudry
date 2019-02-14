@@ -15,5 +15,6 @@ defmodule Crudry.User do
     user
     |> cast(attrs, [:username])
     |> validate_required([:username])
+    |> validate_length(:username, min: 2)
   end
 end

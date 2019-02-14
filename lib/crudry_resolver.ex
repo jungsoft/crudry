@@ -31,7 +31,7 @@ defmodule Crudry.Resolver do
         end
 
         def list_my_schemas(_args, _info) do
-          MyContext.list_my_schemas()
+          {:ok, MyContext.list_my_schemas()}
         end
 
         def create_my_schema(%{params: params}, _info) do

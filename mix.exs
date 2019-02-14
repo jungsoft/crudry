@@ -52,7 +52,8 @@ defmodule Crudry.MixProject do
       {:inflex, "~> 1.10.0"},
       {:ecto, "~> 3.0"},
       {:ecto_sql, "~> 3.0", only: :test},
-      {:postgrex, ">= 0.0.0", only: :test}
+      {:postgrex, ">= 0.0.0", only: :test},
+      {:absinthe, "~> 1.4.0"}
     ]
   end
 end
