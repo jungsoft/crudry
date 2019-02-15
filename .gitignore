@@ -25,3 +25,5 @@ crudry-*.tar
 # Files matching config/*.secret.exs pattern contain sensitive
 # data and you should not commit them into version control.
 /config/*.secret.exs
+
+.DS_Store
