@@ -102,16 +102,17 @@ defmodule CrudryResolverTest do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
 
     defmodule ResolverListOptionsDefault do
-      Crudry.Resolver.default list_opts: [order_by: :id, sorting_order: :desc]
+      Crudry.Resolver.default(list_opts: [order_by: :id, sorting_order: :desc])
       Crudry.Resolver.generate_functions(Users, User)
     end
+
     ResolverListOptionsDefault.create_user(@userparams, @info)
     ResolverListOptionsDefault.create_user(@userparams, @info)
     ResolverListOptionsDefault.create_user(@userparams, @info)
     ResolverListOptionsDefault.create_user(@userparams, @info)
 
     {:ok, user_list} = ResolverListOptionsDefault.list_users(%{}, @info)
-    id_list = Enum.map(user_list, &(&1.id))
+    id_list = Enum.map(user_list, & &1.id)
     assert List.first(id_list) > List.last(id_list)
   end
 
@@ -119,7 +120,10 @@ defmodule CrudryResolverTest do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
 
     defmodule ResolverListOptions do
-      Crudry.Resolver.generate_functions(Users, User, list_opts: [order_by: :id, sorting_order: :asc])
+      Crudry.Resolver.generate_functions(Users, User,
+        list_opts: [order_by: :id, sorting_order: :asc]
+      )
+
       Crudry.Resolver.generate_functions(Posts, Post, list_opts: [order_by: [:user_id, :title]])
     end
 
@@ -135,21 +139,37 @@ defmodule CrudryResolverTest do
     first_post_title = "Post A"
     last_post_title = "Post B"
 
-    ResolverListOptions.create_post(%{params: %{user_id: last_user_id, title: last_post_title}}, @info)
-    ResolverListOptions.create_post(%{params: %{user_id: last_user_id, title: first_post_title}}, @info)
-    ResolverListOptions.create_post(%{params: %{user_id: first_user_id, title: last_post_title}}, @info)
-    ResolverListOptions.create_post(%{params: %{user_id: first_user_id, title: first_post_title}}, @info)
+    ResolverListOptions.create_post(
+      %{params: %{user_id: last_user_id, title: last_post_title}},
+      @info
+    )
+
+    ResolverListOptions.create_post(
+      %{params: %{user_id: last_user_id, title: first_post_title}},
+      @info
+    )
+
+    ResolverListOptions.create_post(
+      %{params: %{user_id: first_user_id, title: last_post_title}},
+      @info
+    )
+
+    ResolverListOptions.create_post(
+      %{params: %{user_id: first_user_id, title: first_post_title}},
+      @info
+    )
 
     {:ok, post_list} = ResolverListOptions.list_posts(%{}, @info)
 
-    id_list = Enum.map(user_list, &(&1.id))
+    id_list = Enum.map(user_list, & &1.id)
     assert List.first(id_list) < List.last(id_list)
+
     assert [
-      %{user_id: first_user_id, title: first_post_title},
-      %{user_id: first_user_id, title: last_post_title},
-      %{user_id: last_user_id, title: first_post_title},
-      %{user_id: last_user_id, title: last_post_title}
-    ] == Enum.map(post_list, & Map.take(&1, [:user_id, :title]))
+             %{user_id: first_user_id, title: first_post_title},
+             %{user_id: first_user_id, title: last_post_title},
+             %{user_id: last_user_id, title: first_post_title},
+             %{user_id: last_user_id, title: last_post_title}
+           ] == Enum.map(post_list, &Map.take(&1, [:user_id, :title]))
   end
 
   test "create custom update using nil_to_error" do

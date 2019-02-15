@@ -2,6 +2,8 @@
 
 Crudry is an elixir library for DRYing CRUD of Phoenix Contexts and Absinthe Resolvers.
 
+It also provides a simple middleware for translating changeset errors into readable messages.
+
 Documentation can be found at [https://hexdocs.pm/crudry](https://hexdocs.pm/crudry).
 
 ## Installation
@@ -11,7 +13,7 @@ The package can be installed by adding `crudry` to your list of dependencies in 
 ```elixir
 def deps do
   [
-    {:crudry, "~> 1.1.1"}
+    {:crudry, "~> 1.2.0"}
   ]
 end
 ```
@@ -20,3 +22,4 @@ end
 
 * [Context Generation](https://hexdocs.pm/crudry/Crudry.Context.html#module-usage)
 * [Resolver Generation](https://hexdocs.pm/crudry/Crudry.Resolver.html#module-usage)
+* [Middleware](https://hexdocs.pm/crudry/doc/Crudry.Middlewares.HandleChangesetErrors.html)

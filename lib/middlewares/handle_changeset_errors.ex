@@ -15,10 +15,10 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
 
   To handle errors for all fields, use [Object Wide Authentication](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-object-wide-authentication):
 
-        def middleware(middleware, _field, %Absinthe.Type.Object{identifier: identifier})
-        when identifier in [:query, :subscription, :mutation] do
-          [middleware | HandleChangesetErrors]
-        end
+      def middleware(middleware, _field, %Absinthe.Type.Object{identifier: identifier})
+      when identifier in [:query, :subscription, :mutation] do
+        [middleware | HandleChangesetErrors]
+      end
 
   ## Examples
 
@@ -32,7 +32,7 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
         valid?: false
       >
 
-  The mutation result will be `{:error, ["username can't be blank"]}`
+  The resulting error will be `["username can't be blank"]`
 
   For a changeset with nested errors:
 
@@ -52,12 +52,15 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
             >
           ]
         },
-        errors: [username: {"should be at least %{count} character(s)", [count: 2, validation: :length, kind: :min]}],
+        errors: [
+          username: {"should be at least %{count} character(s)",
+          [count: 2, validation: :length, kind: :min]}
+        ],
         data: #Crudry.User<>,
         valid?: false
       >
 
-  The mutation result will be `{:error, ["posts: title can't be blank", "posts: user_id can't be blank", "username can't be blank"]}`
+  The resulting error will be `["posts: title can't be blank", "posts: user_id can't be blank", "username can't be blank"]`
   """
 
   @behaviour Absinthe.Middleware
@@ -82,13 +85,13 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
   # The error message is a tuple like this:
   # {"should be at least %{count} characters", [count: 3, validation: :length, min: 3]}
   # So here we translate it to become like this:
-  # %{title: ["should be at least 3 characters"]}
+  # "should be at least 3 characters"
   defp translate_error({err, opts}) do
     key = opts |> Keyword.keys() |> List.first()
     String.replace(err, "%{#{key}}", to_string(opts[key]))
   end
 
-  # Simple case (e.g. `key`: `label`, `value`: `"does not exist"`)
+  # Simple case (e.g. key: `label`, value: `"does not exist"`)
   # Just concatenate strings
   defp message_to_string(key, [value]) when is_binary(value) do
     "#{key} #{value}"
@@ -96,7 +99,7 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
 
   # Nested case, like this:
   # %{project_workflow_steps: [%{map: %{definition: ["cant be blank"]}}, %{}]}
-  # key: project_workflow_steps, value: [%{map: %{definition: ["cant be blank"]}}, %{}]
+  # key: `project_workflow_steps`, value: `[%{map: %{definition: ["cant be blank"]}}, %{}]`
   # Remove empty maps and recursively convert nested messages to string
   defp message_to_string(key, value) when is_list(value) do
     value
@@ -109,9 +112,11 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
   end
 
   # When there are no more nested errors, the input is
-  # key: map, value: %{definition: ["cant be blank"]}
+  # key: `map`, value: `%{definition: ["cant be blank"]}`
+  # Only add `key: ` to the start of the string if this is the last level of nesting.
   defp message_to_string(key, %{} = value) do
     inner_key = value |> Map.keys() |> List.first()
+
     case value[inner_key] |> List.first() do
       %{} -> message_to_string(inner_key, value[inner_key])
       _ -> "#{key}: #{message_to_string(inner_key, value[inner_key])}"

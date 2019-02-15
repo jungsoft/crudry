@@ -12,10 +12,13 @@ defmodule ResolverFunctionsGenerator do
 
   def generate_function(:list, name, context, opts) do
     pluralized_name = Inflex.pluralize(name)
+
     quote do
       def unquote(:"list_#{pluralized_name}")(_args, _info) do
         {:ok,
-         apply(unquote(context), String.to_existing_atom("list_#{unquote(pluralized_name)}"), [unquote(opts[:list_opts])])}
+         apply(unquote(context), String.to_existing_atom("list_#{unquote(pluralized_name)}"), [
+           unquote(opts[:list_opts])
+         ])}
       end
     end
   end
