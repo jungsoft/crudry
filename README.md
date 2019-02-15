@@ -22,4 +22,4 @@ end
 
 * [Context Generation](https://hexdocs.pm/crudry/Crudry.Context.html#module-usage)
 * [Resolver Generation](https://hexdocs.pm/crudry/Crudry.Resolver.html#module-usage)
-* [Middleware](https://hexdocs.pm/crudry/doc/Crudry.Middlewares.HandleChangesetErrors.html)
+* [Middleware](https://hexdocs.pm/crudry/Crudry.Middlewares.HandleChangesetErrors.html)

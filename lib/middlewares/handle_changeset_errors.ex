@@ -60,7 +60,7 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
         valid?: false
       >
 
-  The resulting error will be `["posts: title can't be blank", "posts: user_id can't be blank", "username can't be blank"]`
+  The resulting error will be `["posts: title can't be blank", "posts: user_id can't be blank", "username should be at least 2 character(s)"]`
   """
 
   @behaviour Absinthe.Middleware
