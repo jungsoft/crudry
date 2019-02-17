@@ -6,6 +6,7 @@ defmodule Crudry.Post do
     field(:title, :string)
     belongs_to(:user, Crudry.User)
     has_many(:likes, Crudry.Like)
+    has_one(:comment, Crudry.Comment)
 
     timestamps()
   end
@@ -18,9 +19,15 @@ defmodule Crudry.Post do
     |> foreign_key_constraint(:user_id)
   end
 
-  def nested_changeset(post, attrs) do
+  def nested_likes_changeset(post, attrs) do
     post
     |> changeset(attrs)
     |> cast_assoc(:likes, with: &Crudry.Like.changeset/2)
+  end
+
+  def nested_comment_changeset(post, attrs) do
+    post
+    |> changeset(attrs)
+    |> cast_assoc(:comment, with: &Crudry.Comment.changeset/2)
   end
 end

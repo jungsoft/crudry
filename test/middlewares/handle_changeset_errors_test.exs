@@ -35,7 +35,7 @@ defmodule HandleChangesetErrorsTest do
              build_resolution(["title can't be blank", "user_id can't be blank"])
   end
 
-  test "translate nested changeset errors" do
+  test "translate nested changeset errors for has_many association" do
     changeset =
       %User{}
       |> User.changeset(%{posts: [%{}]})
@@ -51,11 +51,27 @@ defmodule HandleChangesetErrorsTest do
              ])
   end
 
-  test "translate deeply nested changeset errors" do
+  test "translate nested changeset errors for has_one association" do
+    changeset =
+      %Post{}
+      |> Post.nested_comment_changeset(%{comment: %{}})
+
+    resolution = build_resolution(changeset)
+
+    assert HandleChangesetErrors.call(resolution, :_) ==
+             build_resolution([
+               "comment: content can't be blank",
+               "comment: post_id can't be blank",
+               "title can't be blank",
+               "user_id can't be blank"
+             ])
+  end
+
+  test "translate deeply nested changeset errors for has_many association" do
     changeset =
       %User{}
       |> User.changeset(%{posts: [%{likes: [%{}]}]})
-      |> Changeset.cast_assoc(:posts, with: &Post.nested_changeset/2)
+      |> Changeset.cast_assoc(:posts, with: &Post.nested_likes_changeset/2)
 
     resolution = build_resolution(changeset)
 
@@ -63,6 +79,30 @@ defmodule HandleChangesetErrorsTest do
              build_resolution([
                "likes: post_id can't be blank",
                "likes: user_id can't be blank",
+               "posts: title can't be blank",
+               "posts: user_id can't be blank",
+               "username can't be blank"
+             ])
+  end
+
+  test "translate deeply nested changeset errors for has_one association" do
+    changeset =
+      %User{}
+      |> User.changeset(%{
+        posts: [
+          %{
+            comment: %{}
+          }
+        ]
+      })
+      |> Changeset.cast_assoc(:posts, with: &Post.nested_comment_changeset/2)
+
+    resolution = build_resolution(changeset)
+
+    assert HandleChangesetErrors.call(resolution, :_) ==
+             build_resolution([
+               "comment: content can't be blank",
+               "comment: post_id can't be blank",
                "posts: title can't be blank",
                "posts: user_id can't be blank",
                "username can't be blank"

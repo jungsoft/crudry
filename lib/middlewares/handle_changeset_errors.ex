@@ -6,6 +6,8 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
 
   To handle errors for a field, add it after the resolve, using [`middleware/2`](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-the-middleware-2-macro):
 
+      alias Crudry.Middlewares.HandleChangesetErrors
+
       field :create_user, :user do
         arg :params, non_null(:user_params)
 
@@ -14,6 +16,8 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
       end
 
   To handle errors for all fields, use [Object Wide Authentication](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-object-wide-authentication):
+
+      alias Crudry.Middlewares.HandleChangesetErrors
 
       def middleware(middleware, _field, %Absinthe.Type.Object{identifier: identifier})
       when identifier in [:query, :subscription, :mutation] do
@@ -115,11 +119,14 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
   # key: `map`, value: `%{definition: ["cant be blank"]}`
   # Only add `key: ` to the start of the string if this is the last level of nesting.
   defp message_to_string(key, %{} = value) do
-    inner_key = value |> Map.keys() |> List.first()
-
-    case value[inner_key] |> List.first() do
-      %{} -> message_to_string(inner_key, value[inner_key])
-      _ -> "#{key}: #{message_to_string(inner_key, value[inner_key])}"
-    end
+    Enum.map(value, fn {inner_key, inner_value} ->
+      case get_value(inner_value) do
+        %{} -> message_to_string(inner_key, inner_value)
+        _ -> "#{key}: #{message_to_string(inner_key, inner_value)}"
+      end
+    end)
   end
+
+  defp get_value(%{} = value), do: value
+  defp get_value(value), do: List.first(value)
 end
