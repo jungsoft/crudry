@@ -73,11 +73,17 @@ defmodule Crudry.Query do
   """
   def filter(initial_query, filters \\ []) do
     Enum.reduce(filters, initial_query, fn
-      {field, filter_arr}, query_acc ->
+      {field, filter_arr}, query_acc when is_list(filter_arr) ->
         query_acc
         |> where(
           [m],
           field(m, ^field) in ^filter_arr
+        )
+      {field, filter}, query_acc ->
+        query_acc
+        |> where(
+          [m],
+          field(m, ^field) == ^filter
         )
     end)
   end
