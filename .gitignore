@@ -27,3 +27,5 @@ crudry-*.tar
 /config/*.secret.exs
 
 .DS_Store
+
+.elixir_ls/
