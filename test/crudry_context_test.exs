@@ -5,11 +5,15 @@ defmodule CrudryContextTest do
   alias Crudry.Repo
 
   @user %{username: "Chuck Norris"}
+  @user2 %{username: "Will Smith"}
+  @user3 %{username: "Sylvester Stallone"}
   @post %{title: "Chuck Norris threw a grenade and killed 50 people, then it exploded."}
 
   alias CrudryTest.Test
 
   test "creates the CRUD functions" do
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
+
     defmodule Context do
       alias CrudryTest.Repo
       alias CrudryTest.Test
@@ -17,14 +21,24 @@ defmodule CrudryContextTest do
       Crudry.Context.generate_functions(Test)
     end
 
+    defmodule UserContext do
+      alias Crudry.User
+
+      Crudry.Context.generate_functions(User)
+    end
+
     assert Context.create_test(%{x: 2}) == {:ok, %Test{x: 2}}
 
     assert Context.list_tests() == [1, 2, 3]
 
-    # How to test these?
-    # assert Context.list_tests(%{limit: 4}) == 2
-    # assert Context.search_tests("asd") == 2
-    # assert Context.filter_tests(%{id: [3,6]}) == 2
+    assert {:ok, %{} = user1} = UserContext.create_user(@user)
+    assert {:ok, %{} = user2} = UserContext.create_user(@user2)
+    assert {:ok, %{} = user3} = UserContext.create_user(@user3)
+
+    assert UserContext.list_users(limit: 1) == [user1]
+    assert UserContext.search_users(@user2.username) == [user2]
+    assert UserContext.filter_users(%{id: [user1.id, user2.id]}) == [user1, user2]
+    assert UserContext.filter_users(%{username: @user3.username}) == [user3]
 
     assert Context.count_tests(:id) == 6
 
