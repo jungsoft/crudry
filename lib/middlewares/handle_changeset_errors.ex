@@ -19,9 +19,14 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
 
       alias Crudry.Middlewares.HandleChangesetErrors
 
+      # Only add the middleware to mutations
       def middleware(middleware, _field, %Absinthe.Type.Object{identifier: identifier})
-      when identifier in [:query, :subscription, :mutation] do
-        [middleware | HandleChangesetErrors]
+      when identifier in [:mutation] do
+        middleware ++ [HandleChangesetErrors]
+      end
+
+      def middleware(middleware, _field, _object) do
+        middleware
       end
 
   ## Examples
