@@ -27,6 +27,14 @@ defmodule HandleChangesetErrorsTest do
              build_resolution("username should be at least 2 character(s)")
   end
 
+  test "translate validate_number changeset error" do
+    changeset = User.changeset(%User{}, %{username: "name", age: -5})
+    resolution = build_resolution(changeset)
+
+    assert HandleChangesetErrors.call(resolution, :_) ==
+             build_resolution("age must be greater than 0")
+  end
+
   test "translate multiple changeset errors" do
     changeset = Post.changeset(%Post{}, %{})
     resolution = build_resolution(changeset)

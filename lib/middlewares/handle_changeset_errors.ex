@@ -96,8 +96,9 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
   # So here we translate it to become like this:
   # "should be at least 3 characters"
   defp translate_error({err, opts}) do
-    key = opts |> Keyword.keys() |> List.first()
-    String.replace(err, "%{#{key}}", to_string(opts[key]))
+    Enum.reduce(opts, err, fn {key, value}, acc ->
+      String.replace(acc, "%{#{key}}", to_string(value))
+    end)
   end
 
   # Simple case (e.g. key: `label`, value: `"does not exist"`)

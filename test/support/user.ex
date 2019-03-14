@@ -4,6 +4,7 @@ defmodule Crudry.User do
 
   schema "users" do
     field(:username, :string)
+    field(:age, :integer)
     has_many(:posts, Crudry.Post)
     has_many(:likes, Crudry.Like)
 
@@ -13,8 +14,9 @@ defmodule Crudry.User do
   @doc false
   def changeset(user, attrs) do
     user
-    |> cast(attrs, [:username])
+    |> cast(attrs, [:username, :age])
     |> validate_required([:username])
     |> validate_length(:username, min: 2)
+    |> validate_number(:age, greater_than: 0)
   end
 end

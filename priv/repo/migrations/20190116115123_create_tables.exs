@@ -4,6 +4,7 @@ defmodule Crudry.Repo.Migrations.CreateTables do
   def change do
     create table(:users) do
       add :username, :string
+      add :age, :integer
 
       timestamps()
     end

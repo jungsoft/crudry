@@ -10,7 +10,7 @@ defmodule Crudry.Query do
   @doc """
   Applies some restrictions to the query.
 
-  Expects `opts` to be a map containing some of these fields:
+  Expects `opts` to be a keyword list containing some of these fields:
 
   * `limit`: defaults to not limiting
   * `offset`: defaults to `0`
