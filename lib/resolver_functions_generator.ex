@@ -14,11 +14,17 @@ defmodule ResolverFunctionsGenerator do
     pluralized_name = Inflex.pluralize(name)
 
     quote do
-      def unquote(:"list_#{pluralized_name}")(_args, _info) do
+      def unquote(:"list_#{pluralized_name}")(_args, info) do
+        list_opts = unquote(opts[:list_opts])
+        custom_list_opts =
+          case Keyword.get(list_opts, :custom_query, nil) do
+            nil -> list_opts
+            custom_query -> Keyword.put(list_opts, :custom_query, add_info_to_custom_query(custom_query, info))
+          end
+
         {:ok,
-         apply(unquote(context), String.to_existing_atom("list_#{unquote(pluralized_name)}"), [
-           unquote(opts[:list_opts])
-         ])}
+          apply(unquote(context), String.to_existing_atom("list_#{unquote(pluralized_name)}"), [custom_list_opts])
+        }
       end
     end
   end
@@ -63,6 +69,14 @@ defmodule ResolverFunctionsGenerator do
           nil -> {:error, "#{Macro.camelize(name)} not found."}
           %{} = record -> func.(record)
         end
+      end
+    end
+  end
+
+  def generate_function(:add_info_to_custom_query, _name, _context, _opts) do
+    quote do
+      def unquote(:add_info_to_custom_query)(custom_query, info) do
+        fn initial_query -> custom_query.(initial_query, info) end
       end
     end
   end

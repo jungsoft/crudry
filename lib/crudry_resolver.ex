@@ -133,20 +133,23 @@ defmodule Crudry.Resolver do
       AccountsResolver.delete_user(%{id: id}, info)
       AccountsResolver.nil_to_error(result, name, func)
   """
+
+  # Always generate helper functions since they are used in the other generated functions
+  @helper_functions ~w(nil_to_error add_info_to_custom_query)a
+
   defmacro generate_functions(context, schema_module, opts \\ []) do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
     name = Helper.get_underscored_name(schema_module)
     _ = String.to_atom(name)
 
-    # Always generate nil_to_error function since it's used in the other generated functions
     for func <- get_functions_to_be_generated(__CALLER__.module) do
-      if func == :nil_to_error || Helper.define_function?(func, opts[:only], opts[:except]) do
+      if Enum.member?(@helper_functions, func) || Helper.define_function?(func, opts[:only], opts[:except]) do
         ResolverFunctionsGenerator.generate_function(func, name, context, opts)
       end
     end
   end
 
-  # Use an attribute in the caller's module to make sure the `nil_to_error` function is only generated once per module.
+  # Use an attribute in the caller's module to make sure helper functions are only generated once per module.
   defp get_functions_to_be_generated(module) do
     functions = [:get, :list, :create, :update, :delete]
 
@@ -154,7 +157,7 @@ defmodule Crudry.Resolver do
       functions
     else
       Module.put_attribute(module, :called, true)
-      [:nil_to_error | functions]
+      @helper_functions ++ functions
     end
   end
 
