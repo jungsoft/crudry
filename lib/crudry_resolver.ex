@@ -89,6 +89,8 @@ defmodule Crudry.Resolver do
 
     * `list_opts` - options for the `list` function. See available options in `Crudry.Query.list/2`. Default to `[]`.
 
+    Note: in list_opts, custom_query will receive absinthe's info as the second argument and, therefore, must have arity 2. See example below.
+
     The accepted values for `:only` and `:except` are: `[:get, :list, :create, :update, :delete]`.
 
   ## Examples
@@ -100,6 +102,17 @@ defmodule Crudry.Resolver do
       :ok
 
       iex> Crudry.Resolver.default list_opts: [order_by: :id]
+      :ok
+
+      def scope_list(Post, info) do
+        current_user = info.context.current_user
+
+        where(Post, [p], p.user_id == ^current_user.id)
+      end
+
+      def scope_list(initial_query, _info), do: initial_query
+
+      iex> Crudry.Resolver.default list_opts: [custom_query: &scope_list/2]
       :ok
   """
   defmacro default(opts) do
@@ -133,20 +146,23 @@ defmodule Crudry.Resolver do
       AccountsResolver.delete_user(%{id: id}, info)
       AccountsResolver.nil_to_error(result, name, func)
   """
+
+  # Always generate helper functions since they are used in the other generated functions
+  @helper_functions ~w(nil_to_error add_info_to_custom_query)a
+
   defmacro generate_functions(context, schema_module, opts \\ []) do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
     name = Helper.get_underscored_name(schema_module)
     _ = String.to_atom(name)
 
-    # Always generate nil_to_error function since it's used in the other generated functions
     for func <- get_functions_to_be_generated(__CALLER__.module) do
-      if func == :nil_to_error || Helper.define_function?(func, opts[:only], opts[:except]) do
+      if Enum.member?(@helper_functions, func) || Helper.define_function?(func, opts[:only], opts[:except]) do
         ResolverFunctionsGenerator.generate_function(func, name, context, opts)
       end
     end
   end
 
-  # Use an attribute in the caller's module to make sure the `nil_to_error` function is only generated once per module.
+  # Use an attribute in the caller's module to make sure helper functions are only generated once per module.
   defp get_functions_to_be_generated(module) do
     functions = [:get, :list, :create, :update, :delete]
 
@@ -154,7 +170,7 @@ defmodule Crudry.Resolver do
       functions
     else
       Module.put_attribute(module, :called, true)
-      [:nil_to_error | functions]
+      @helper_functions ++ functions
     end
   end
 

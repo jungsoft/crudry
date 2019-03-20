@@ -16,6 +16,7 @@ defmodule Crudry.Query do
   * `offset`: defaults to `0`
   * `sorting_order`: defaults to `:asc` (only works if there is also a `order_by` specified)
   * `order_by`: defaults to not ordering
+  * `custom_query`: A function that receives the initial query as argument and returns a custom query. Defaults to initial_query
 
   ## Examples
 
@@ -23,8 +24,10 @@ defmodule Crudry.Query do
       Crudry.Query.list(MySchema, [limit: 10, offset: 3, sorting_order: :desc, order_by: :value])
       Crudry.Query.list(MySchema, [order_by: "value"])
       Crudry.Query.list(MySchema, [order_by: :value])
+      Crudry.Query.list(MySchema, [custom_query: &MySchema.scope_list/1])
   """
   def list(initial_query, opts \\ []) do
+    custom_query = Keyword.get(opts, :custom_query, nil)
     limit = Keyword.get(opts, :limit, nil)
     offset = Keyword.get(opts, :offset, 0)
     sorting_order = Keyword.get(opts, :sorting_order, :asc)
@@ -32,6 +35,7 @@ defmodule Crudry.Query do
     order = parse_order_by_args(sorting_order, order_by)
 
     initial_query
+    |> get_custom_query(custom_query)
     |> limit(^limit)
     |> offset(^offset)
     |> order_by(^order)
@@ -87,6 +91,10 @@ defmodule Crudry.Query do
         )
     end)
   end
+
+  defp get_custom_query(initial_query, nil), do: initial_query
+
+  defp get_custom_query(initial_query, custom_query), do: custom_query.(initial_query)
 
   defp parse_order_by_args(_, nil), do: []
   defp parse_order_by_args(_, order_by) when is_list(order_by), do: order_by
