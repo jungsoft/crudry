@@ -5,6 +5,8 @@ defmodule CrudryResolverTest do
   alias CrudryTest.Test
   alias Crudry.Repo
 
+  import Ecto.Query
+
   defmodule Users do
     alias Crudry.User
 
@@ -212,7 +214,7 @@ defmodule CrudryResolverTest do
     assert true
   end
 
-  test "Custom query in list_opts is called with initial query and absinthe info" do
+  test "Custom query function in resolver list_opts and Crudry.Query.list/2 is called with correct arguments" do
     :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
 
     first_post_title = "Post A"
@@ -221,8 +223,8 @@ defmodule CrudryResolverTest do
     {:ok, user1} = Users.create_user(%{username: "test"})
     {:ok, user2} = Users.create_user(%{username: "test2"})
 
-    Posts.create_post(%{user_id: user1.id, title: last_post_title})
     Posts.create_post(%{user_id: user1.id, title: first_post_title})
+    Posts.create_post(%{user_id: user1.id, title: last_post_title})
     Posts.create_post(%{user_id: user2.id, title: last_post_title})
     Posts.create_post(%{user_id: user2.id, title: first_post_title})
     Posts.create_post(%{user_id: user2.id, title: last_post_title})
@@ -247,12 +249,28 @@ defmodule CrudryResolverTest do
 
     info = %{context: %{current_user: user2}}
 
-    {:ok, post_list} = PostResolver.list_posts(%{}, info)
+    {:ok, resolver_post_list} = PostResolver.list_posts(%{}, info)
 
     assert [
       %{user_id: user2.id, title: first_post_title},
       %{user_id: user2.id, title: last_post_title},
       %{user_id: user2.id, title: last_post_title}
-    ] == Enum.map(post_list, &Map.take(&1, [:user_id, :title]))
+    ] == Enum.map(resolver_post_list, &Map.take(&1, [:user_id, :title]))
+
+    custom_query = fn initial_query ->
+      initial_query
+      |> where([p], p.user_id == ^user1.id)
+      |> order_by(desc: :title)
+    end
+
+    query_post_list =
+      Crudry.Post
+      |> Crudry.Query.list([custom_query: custom_query])
+      |> Repo.all
+
+    assert [
+      %{user_id: user1.id, title: last_post_title},
+      %{user_id: user1.id, title: first_post_title}
+    ] == Enum.map(query_post_list, &Map.take(&1, [:user_id, :title]))
   end
 end

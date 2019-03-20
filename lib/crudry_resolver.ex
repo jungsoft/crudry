@@ -89,6 +89,8 @@ defmodule Crudry.Resolver do
 
     * `list_opts` - options for the `list` function. See available options in `Crudry.Query.list/2`. Default to `[]`.
 
+    Note: in list_opts, custom_query will receive absinthe's info as the second argument and, therefore, must have arity 2. See example below.
+
     The accepted values for `:only` and `:except` are: `[:get, :list, :create, :update, :delete]`.
 
   ## Examples
@@ -100,6 +102,17 @@ defmodule Crudry.Resolver do
       :ok
 
       iex> Crudry.Resolver.default list_opts: [order_by: :id]
+      :ok
+
+      def scope_list(Post, info) do
+        current_user = info.context.current_user
+
+        where(Post, [p], p.user_id == ^current_user.id)
+      end
+
+      def scope_list(initial_query, _info), do: initial_query
+
+      iex> Crudry.Resolver.default list_opts: [custom_query: &scope_list/2]
       :ok
   """
   defmacro default(opts) do

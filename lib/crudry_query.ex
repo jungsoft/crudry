@@ -16,7 +16,7 @@ defmodule Crudry.Query do
   * `offset`: defaults to `0`
   * `sorting_order`: defaults to `:asc` (only works if there is also a `order_by` specified)
   * `order_by`: defaults to not ordering
-  * `custom_query`: A functions that receives the initial query and absinthe's info as arguments and returns a custom query. Defaults to initial_query
+  * `custom_query`: A function that receives the initial query as argument and returns a custom query. Defaults to initial_query
 
   ## Examples
 
@@ -24,7 +24,7 @@ defmodule Crudry.Query do
       Crudry.Query.list(MySchema, [limit: 10, offset: 3, sorting_order: :desc, order_by: :value])
       Crudry.Query.list(MySchema, [order_by: "value"])
       Crudry.Query.list(MySchema, [order_by: :value])
-      Crudry.Query.list(MySchema, [custom_query: &MySchema.scope_list/2])
+      Crudry.Query.list(MySchema, [custom_query: &MySchema.scope_list/1])
   """
   def list(initial_query, opts \\ []) do
     custom_query = Keyword.get(opts, :custom_query, nil)
