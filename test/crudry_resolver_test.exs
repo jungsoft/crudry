@@ -221,11 +221,11 @@ defmodule CrudryResolverTest do
     {:ok, user1} = Users.create_user(%{username: "test"})
     {:ok, user2} = Users.create_user(%{username: "test2"})
 
-    Posts.create_post(%{user_id: user2.id, title: last_post_title})
     Posts.create_post(%{user_id: user1.id, title: last_post_title})
+    Posts.create_post(%{user_id: user1.id, title: first_post_title})
+    Posts.create_post(%{user_id: user2.id, title: last_post_title})
     Posts.create_post(%{user_id: user2.id, title: first_post_title})
     Posts.create_post(%{user_id: user2.id, title: last_post_title})
-    Posts.create_post(%{user_id: user1.id, title: first_post_title})
 
     defmodule PostResolver do
 
@@ -234,8 +234,7 @@ defmodule CrudryResolverTest do
       def custom_query(initial_query, info_arg) do
         current_user = info_arg.context.current_user
 
-        initial_query
-        |> where([p], p.user_id == ^current_user.id)
+        where(initial_query, [p], p.user_id == ^current_user.id)
       end
 
       Crudry.Resolver.generate_functions(Posts, Post,
