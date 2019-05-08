@@ -16,6 +16,15 @@ defmodule CrudryResolverTest do
     Context.generate_functions(User)
   end
 
+  defmodule Companies do
+    alias Crudry.Company
+
+    require Crudry.Context
+    alias Crudry.Context
+
+    Context.generate_functions(Company)
+  end
+
   defmodule Posts do
     alias Crudry.Post
 
@@ -272,5 +281,27 @@ defmodule CrudryResolverTest do
       %{user_id: user1.id, title: last_post_title},
       %{user_id: user1.id, title: first_post_title}
     ] == Enum.map(query_post_list, &Map.take(&1, [:user_id, :title]))
+  end
+
+  test "Custom create_resolver receives correct arguments" do
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Repo)
+
+    defmodule UserResolver do
+      def create_resolver(context, schema_name, args, %{context: %{current_user: %{company_id: company_id}}}) do
+        apply(context, :"create_#{schema_name}", [Map.put(args.params, :company_id, company_id)])
+      end
+
+      Crudry.Resolver.generate_functions(Users, User, create_resolver: &create_resolver/4)
+    end
+
+    {:ok, company} = Companies.create_company(%{name: "Nike"})
+    {:ok, user} = Users.create_user(%{username: "test", company_id: company.id})
+    info = %{context: %{current_user: user}}
+    params = %{username: "Jonas"}
+
+    {:ok, new_user} = UserResolver.create_user(%{params: params}, info)
+
+    assert new_user.company_id == company.id
+    assert new_user.username == params.username
   end
 end
