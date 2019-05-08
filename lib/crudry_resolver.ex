@@ -74,6 +74,25 @@ defmodule Crudry.Resolver do
       end
 
   By using the `nil_to_error` function, we DRY the nil checking and also ensure the error message is the same as the other auto-generated functions.
+
+  It's also possible to define a custom create function, useful when all functions in a resolver change the data in the same way before creating:
+
+      defmodule MyApp.Resolver do
+        alias MyApp.Repo
+        alias MyApp.MyContext
+        alias MyApp.MySchema
+        require Crudry.Resolver
+
+        Crudry.Resolver.default create_resolver: &create_resolver/4)
+        Crudry.Resolver.generate_functions MyContext, MySchema
+        Crudry.Resolver.generate_functions MyContext, OtherSchema
+
+        def create_resolver(context, schema_name, args, %{context: %{current_user: %{company_id: company_id}}}) do
+          apply(context, :"create_\#{schema_name}", [Map.put(args.params, :company_id, company_id)])
+        end
+      end
+
+    Now when creating `MySchema` and `OtherSchema`, the custom function will put the user's `company_id` in the params.
   """
 
   @doc """
@@ -134,6 +153,9 @@ defmodule Crudry.Resolver do
     end
   end
 
+  # Always generate helper functions since they are used in the other generated functions
+  @helper_functions ~w(nil_to_error add_info_to_custom_query)a
+
   @doc """
   Generates CRUD functions for the `schema_module` resolver.
 
@@ -159,10 +181,6 @@ defmodule Crudry.Resolver do
       AccountsResolver.delete_user(%{id: id}, info)
       AccountsResolver.nil_to_error(result, name, func)
   """
-
-  # Always generate helper functions since they are used in the other generated functions
-  @helper_functions ~w(nil_to_error add_info_to_custom_query)a
-
   defmacro generate_functions(context, schema_module, opts \\ []) do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
     name = Helper.get_underscored_name(schema_module)
