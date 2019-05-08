@@ -119,6 +119,7 @@ defmodule Crudry.Resolver do
     Module.put_attribute(__CALLER__.module, :only, opts[:only])
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
     Module.put_attribute(__CALLER__.module, :list_opts, opts[:list_opts])
+    Module.put_attribute(__CALLER__.module, :create_generator, opts[:create_generator])
   end
 
   @doc """
@@ -179,11 +180,13 @@ defmodule Crudry.Resolver do
     only = Module.get_attribute(module, :only)
     except = Module.get_attribute(module, :except)
     list_opts = Module.get_attribute(module, :list_opts)
+    create_generator = Module.get_attribute(module, :create_generator)
 
     [
       only: only || [],
       except: except || [],
-      list_opts: list_opts || []
+      list_opts: list_opts || [],
+      create_generator: create_generator || []
     ]
   end
 end
