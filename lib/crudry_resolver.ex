@@ -122,10 +122,14 @@ defmodule Crudry.Resolver do
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
     Module.put_attribute(__CALLER__.module, :list_opts, opts[:list_opts])
 
-    create_resolver_fun = opts[:create_resolver]
-    case create_resolver_fun && :erlang.fun_info(create_resolver_fun)[:arity] do
-      nil -> :ok
-      4 -> Module.put_attribute(__CALLER__.module, :create_resolver, create_resolver_fun)
+    put_create_resolver_attribute(__CALLER__.module, opts[:create_resolver])
+  end
+
+  defp put_create_resolver_attribute(_, nil), do: :ok
+
+  defp put_create_resolver_attribute(caller_module, create_resolver_fun) do
+    case :erlang.fun_info(create_resolver_fun)[:arity] do
+      4 -> Module.put_attribute(caller_module, :create_resolver, create_resolver_fun)
       _ -> raise "Create generator function must have arity 4"
     end
   end
