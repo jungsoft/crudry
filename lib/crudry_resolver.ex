@@ -89,6 +89,8 @@ defmodule Crudry.Resolver do
 
     * `list_opts` - options for the `list` function. See available options in `Crudry.Query.list/2`. Default to `[]`.
 
+    * `create_resolver` - custom `create` resolver function with arity 4. Receives the following arguments: [Context, schema_name, args, info]. Default to `nil`.
+
     Note: in list_opts, custom_query will receive absinthe's info as the second argument and, therefore, must have arity 2. See example below.
 
     The accepted values for `:only` and `:except` are: `[:get, :list, :create, :update, :delete]`.
@@ -119,6 +121,17 @@ defmodule Crudry.Resolver do
     Module.put_attribute(__CALLER__.module, :only, opts[:only])
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
     Module.put_attribute(__CALLER__.module, :list_opts, opts[:list_opts])
+
+    put_create_resolver_attribute(__CALLER__.module, opts[:create_resolver])
+  end
+
+  defp put_create_resolver_attribute(_, nil), do: :ok
+
+  defp put_create_resolver_attribute(caller_module, create_resolver_fun) do
+    case :erlang.fun_info(create_resolver_fun)[:arity] do
+      4 -> Module.put_attribute(caller_module, :create_resolver, create_resolver_fun)
+      _ -> raise "Create generator function must have arity 4"
+    end
   end
 
   @doc """
@@ -179,11 +192,13 @@ defmodule Crudry.Resolver do
     only = Module.get_attribute(module, :only)
     except = Module.get_attribute(module, :except)
     list_opts = Module.get_attribute(module, :list_opts)
+    create_resolver = Module.get_attribute(module, :create_resolver)
 
     [
       only: only || [],
       except: except || [],
-      list_opts: list_opts || []
+      list_opts: list_opts || [],
+      create_resolver: create_resolver || nil
     ]
   end
 end

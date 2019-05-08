@@ -29,10 +29,13 @@ defmodule ResolverFunctionsGenerator do
     end
   end
 
-  def generate_function(:create, name, context, _opts) do
+  def generate_function(:create, name, context, opts) do
     quote do
-      def unquote(:"create_#{name}")(%{params: params}, _info) do
-        apply(unquote(context), String.to_existing_atom("create_#{unquote(name)}"), [params])
+      def unquote(:"create_#{name}")(%{params: params} = args, info) do
+        case Keyword.get(unquote(opts), :create_resolver, nil) do
+          nil -> apply(unquote(context), String.to_existing_atom("create_#{unquote(name)}"), [params])
+          create_resolver -> create_resolver.(unquote(context), unquote(name), args, info)
+        end
       end
     end
   end

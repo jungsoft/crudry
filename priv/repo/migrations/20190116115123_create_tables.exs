@@ -2,9 +2,16 @@ defmodule Crudry.Repo.Migrations.CreateTables do
   use Ecto.Migration
 
   def change do
+    create table(:companies) do
+      add :name, :string
+
+      timestamps()
+    end
+
     create table(:users) do
       add :username, :string
       add :age, :integer
+      add :company_id, references(:companies)
 
       timestamps()
     end
