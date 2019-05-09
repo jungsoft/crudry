@@ -15,13 +15,12 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
         middleware HandleChangesetErrors
       end
 
-  To handle errors for all fields, use [Object Wide Authentication](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-object-wide-authentication):
+  To handle errors for all fields, use [middleware/3](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-object-wide-authentication):
 
       alias Crudry.Middlewares.HandleChangesetErrors
 
       # Only add the middleware to mutations
-      def middleware(middleware, _field, %Absinthe.Type.Object{identifier: identifier})
-      when identifier in [:mutation] do
+      def middleware(middleware, _field, %Absinthe.Type.Object{identifier: :mutation}) do
         middleware ++ [HandleChangesetErrors]
       end
 
