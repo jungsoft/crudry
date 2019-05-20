@@ -174,11 +174,12 @@ defmodule Crudry.Resolver do
   defmacro generate_functions(context, schema_module, opts \\ []) do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
     name = Helper.get_underscored_name(schema_module)
+    pluralized_name = Helper.get_pluralized_name(schema_module, __CALLER__)
     _ = String.to_atom(name)
 
     for func <- get_functions_to_be_generated(__CALLER__.module) do
       if Enum.member?(@helper_functions, func) || Helper.define_function?(func, opts[:only], opts[:except]) do
-        ResolverFunctionsGenerator.generate_function(func, name, context, opts)
+        ResolverFunctionsGenerator.generate_function(func, name, pluralized_name, context, opts)
       end
     end
   end

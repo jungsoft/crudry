@@ -1,7 +1,7 @@
 defmodule ContextFunctionsGenerator do
   @moduledoc false
 
-  def generate_function(:get, name, module, _opts) do
+  def generate_function(:get, name, _pluralized_name, module, _opts) do
     quote do
       def unquote(:"get_#{name}")(id) do
         unquote(module)
@@ -16,7 +16,7 @@ defmodule ContextFunctionsGenerator do
     end
   end
 
-  def generate_function(:get!, name, module, _opts) do
+  def generate_function(:get!, name, _pluralized_name, module, _opts) do
     quote do
       def unquote(:"get_#{name}!")(id) do
         unquote(module)
@@ -25,14 +25,14 @@ defmodule ContextFunctionsGenerator do
     end
   end
 
-  def generate_function(:list, name, module, _opts) do
+  def generate_function(:list, _name, pluralized_name, module, _opts) do
     quote do
-      def unquote(:"list_#{Inflex.pluralize(name)}")() do
+      def unquote(:"list_#{pluralized_name}")() do
         unquote(module)
         |> alias!(Repo).all()
       end
 
-      def unquote(:"list_#{Inflex.pluralize(name)}")(opts) do
+      def unquote(:"list_#{pluralized_name}")(opts) do
         unquote(module)
         |> Crudry.Query.list(opts)
         |> alias!(Repo).all()
@@ -40,18 +40,18 @@ defmodule ContextFunctionsGenerator do
     end
   end
 
-  def generate_function(:count, name, module, _opts) do
+  def generate_function(:count, _name, pluralized_name, module, _opts) do
     quote do
-      def unquote(:"count_#{Inflex.pluralize(name)}")(field \\ :id) do
+      def unquote(:"count_#{pluralized_name}")(field \\ :id) do
         unquote(module)
         |> alias!(Repo).aggregate(:count, field)
       end
     end
   end
 
-  def generate_function(:search, name, module, _opts) do
+  def generate_function(:search, _name, pluralized_name, module, _opts) do
     quote do
-      def unquote(:"search_#{Inflex.pluralize(name)}")(search_term) do
+      def unquote(:"search_#{pluralized_name}")(search_term) do
         module_fields = unquote(module).__schema__(:fields)
 
         unquote(module)
@@ -61,9 +61,9 @@ defmodule ContextFunctionsGenerator do
     end
   end
 
-  def generate_function(:filter, name, module, _opts) do
+  def generate_function(:filter, _name, pluralized_name, module, _opts) do
     quote do
-      def unquote(:"filter_#{Inflex.pluralize(name)}")(filters) do
+      def unquote(:"filter_#{pluralized_name}")(filters) do
         unquote(module)
         |> Crudry.Query.filter(filters)
         |> alias!(Repo).all()
@@ -71,7 +71,7 @@ defmodule ContextFunctionsGenerator do
     end
   end
 
-  def generate_function(:create, name, module, opts) do
+  def generate_function(:create, name, _pluralized_name, module, opts) do
     quote do
       def unquote(:"create_#{name}")(attrs) do
         unquote(module)
@@ -82,7 +82,7 @@ defmodule ContextFunctionsGenerator do
     end
   end
 
-  def generate_function(:update, name, module, opts) do
+  def generate_function(:update, name, _pluralized_name, module, opts) do
     quote do
       def unquote(:"update_#{name}")(%module{} = struct, attrs) do
         struct
@@ -111,7 +111,7 @@ defmodule ContextFunctionsGenerator do
     end
   end
 
-  def generate_function(:check_assocs, _, _, _) do
+  def generate_function(:check_assocs, _, _, _, _) do
     quote do
       defp unquote(:check_assocs)(changeset, nil), do: changeset
 
@@ -123,7 +123,7 @@ defmodule ContextFunctionsGenerator do
     end
   end
 
-  def generate_function(:delete, name, module, opts) do
+  def generate_function(:delete, name, module, _pluralized_name, opts) do
     quote bind_quoted: [module: module], unquote: true do
       def unquote(:"delete_#{name}")(%module{} = struct) do
         struct
