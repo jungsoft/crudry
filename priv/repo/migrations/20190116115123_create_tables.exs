@@ -29,5 +29,24 @@ defmodule Crudry.Repo.Migrations.CreateTables do
 
       timestamps()
     end
+
+    create table(:comments) do
+      add :content, :string
+      add :post_id, references(:posts)
+
+      timestamps()
+    end
+
+    create table(:camelized_schema_names) do
+      add :content, :string
+
+      timestamps()
+    end
+
+    create table(:categories_schema_source) do
+      add :content, :string
+
+      timestamps()
+    end
   end
 end

@@ -19,6 +19,14 @@ defmodule Crudry.Post do
     |> foreign_key_constraint(:user_id)
   end
 
+  @doc false
+  def nested_changeset(post, attrs) do
+    post
+    |> cast(attrs, [:title, :user_id])
+    |> validate_required([:title])
+    |> foreign_key_constraint(:user_id)
+  end
+
   def nested_likes_changeset(post, attrs) do
     post
     |> changeset(attrs)
