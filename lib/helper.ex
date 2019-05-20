@@ -38,7 +38,6 @@ defmodule Helper do
     module
     |> Macro.expand(caller)
     |> apply(:__schema__, [:source])
-    # module.__schema__(:source)
   end
 
   @doc """

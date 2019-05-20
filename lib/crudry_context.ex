@@ -2,7 +2,11 @@ defmodule Crudry.Context do
   @moduledoc """
   Generates CRUD functions to DRY Phoenix Contexts.
 
-  Assumes `Ecto.Repo` is being used as the repository.
+  * Assumes `Ecto.Repo` is being used as the repository.
+
+  * Uses the Ecto Schema source name to generate the pluralized name for the functions, and the module name to generate the singular name.
+
+    This follows the same pattern as the [Mix.Tasks.Phx.Gen.Context](https://hexdocs.pm/phoenix/Mix.Tasks.Phx.Gen.Context.html), so it should be straightforward to replace Phoenix's auto-generated functions with Crudry.
 
   ## Usage
 
@@ -34,6 +38,11 @@ defmodule Crudry.Context do
 
         def get_my_schema!(id) do
           Repo.get!(MySchema, id)
+        end
+
+        def get_my_schema_with_assocs!(id, assocs) do
+          Repo.get!(MySchema, id)
+          |> Repo.preload(assocs)
         end
 
         def list_my_schemas() do
@@ -192,6 +201,7 @@ defmodule Crudry.Context do
       Accounts.get_user(id)
       Accounts.get_user_with_assocs(id, assocs)
       Accounts.get_user!(id)
+      Accounts.get_user_with_assocs!(id, assocs)
       Accounts.list_users()
       Accounts.list_users(opts)
       Accounts.count_users(field \\\\ :id)
