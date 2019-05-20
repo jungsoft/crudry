@@ -208,11 +208,11 @@ defmodule Crudry.Context do
   defmacro generate_functions(schema_module, opts \\ []) do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
     name = Helper.get_underscored_name(schema_module)
+    pluralized_name = Helper.get_pluralized_name(schema_module, __CALLER__)
 
-    # Always generate nil_to_error function since it's used in the other generated functions
     for func <- get_functions_to_be_generated(__CALLER__.module) do
       if func == :check_assocs || Helper.define_function?(func, opts[:only], opts[:except]) do
-        ContextFunctionsGenerator.generate_function(func, name, schema_module, opts)
+        ContextFunctionsGenerator.generate_function(func, name, pluralized_name, schema_module, opts)
       end
     end
   end
