@@ -22,6 +22,12 @@ defmodule ContextFunctionsGenerator do
         unquote(module)
         |> alias!(Repo).get!(id)
       end
+
+      def unquote(:"get_#{name}_with_assocs!")(id, assocs) do
+        unquote(module)
+        |> alias!(Repo).get!(id)
+        |> alias!(Repo).preload(assocs)
+      end
     end
   end
 
