@@ -10,7 +10,7 @@ defmodule Crudry.Query do
   @doc """
   Applies some restrictions to the query.
 
-  Expects `opts` to be a keyword list containing some of these fields:
+  Expects `opts` to be a keyword list or a map containing some of these fields:
 
   * `limit`: defaults to not limiting
   * `offset`: defaults to `0`
@@ -22,16 +22,18 @@ defmodule Crudry.Query do
 
       Crudry.Query.list(MySchema, [limit: 10])
       Crudry.Query.list(MySchema, [limit: 10, offset: 3, sorting_order: :desc, order_by: :value])
-      Crudry.Query.list(MySchema, [order_by: "value"])
-      Crudry.Query.list(MySchema, [order_by: :value])
-      Crudry.Query.list(MySchema, [custom_query: &MySchema.scope_list/1])
+      Crudry.Query.list(MySchema, %{order_by: "value"})
+      Crudry.Query.list(MySchema, %{order_by: :value})
+      Crudry.Query.list(MySchema, custom_query: &MySchema.scope_list/1)
   """
   def list(initial_query, opts \\ []) do
-    custom_query = Keyword.get(opts, :custom_query, nil)
-    limit = Keyword.get(opts, :limit, nil)
-    offset = Keyword.get(opts, :offset, 0)
-    sorting_order = Keyword.get(opts, :sorting_order, :asc)
-    order_by = Keyword.get(opts, :order_by)
+    access_module = get_access_module(opts)
+
+    custom_query = access_module.get(opts, :custom_query, nil)
+    limit = access_module.get(opts, :limit, nil)
+    offset = access_module.get(opts, :offset, 0)
+    sorting_order = access_module.get(opts, :sorting_order, :asc)
+    order_by = access_module.get(opts, :order_by)
     order = parse_order_by_args(sorting_order, order_by)
 
     initial_query
@@ -40,6 +42,9 @@ defmodule Crudry.Query do
     |> offset(^offset)
     |> order_by(^order)
   end
+
+  defp get_access_module(opts) when is_map(opts), do: Map
+  defp get_access_module(opts) when is_list(opts), do: Keyword
 
   @doc """
   Searches for the `search_term` in the given `fields`.
