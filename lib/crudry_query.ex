@@ -53,7 +53,7 @@ defmodule Crudry.Query do
   end
 
   def search(initial_query, search_term, fields) do
-    Enum.reduce(fields, from(initial_query), fn
+    Enum.reduce(fields, subquery(initial_query), fn
       module_field, query_acc ->
         query_acc
         |> or_where(
