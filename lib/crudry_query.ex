@@ -3,6 +3,18 @@ defmodule Crudry.Query do
   Generates Ecto Queries.
 
   All functions in this module return an `Ecto.Query`.
+
+  Combining the functions in this module can be very powerful. For example, to do pagination with filter and search:
+
+      pagination_params = %{limit: 10, offset: 1, order_by: "id", sorting_order: :desc}
+      filter_params = %{username: ["username1", "username2"]}
+      search_params = %{text: "search text", fields: [:username]}
+
+      User
+      |> Crudry.Query.filter(filter_params)
+      |> Crudry.Query.list(pagination_params)
+      |> Crudry.Query.search(search_params.text, search_params.fields)
+      |> Repo.all()
   """
 
   import Ecto.Query

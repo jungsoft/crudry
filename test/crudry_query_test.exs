@@ -5,6 +5,9 @@ defmodule CrudryQueryTest do
 
   @user %{username: "Chuck Norris"}
   @user2 %{username: "Will Smith"}
+  @user3 %{username: "Aa"}
+  @user4 %{username: "Zz"}
+  @user5 %{username: "Crudry"}
 
   defmodule UserContext do
     require Crudry.Context
@@ -50,6 +53,31 @@ defmodule CrudryQueryTest do
         |> Repo.all()
 
       assert length(users) == 1
+    end
+  end
+
+  describe "combinate functions" do
+    setup do
+      UserContext.create_user(@user3)
+      UserContext.create_user(@user4)
+      UserContext.create_user(@user5)
+      :ok
+    end
+
+    test "to do pagination" do
+      pagination_params = %{limit: 10, offset: 1, order_by: "id", sorting_order: :desc} # Removes Crudry
+      filter_params = %{username: [@user.username, @user2.username, @user3.username]} # Removes Zz
+      search_params = %{text: "i", fields: [:username]} # Removes Aa
+
+      users =
+        User
+        |> Crudry.Query.filter(filter_params)
+        |> Crudry.Query.list(pagination_params)
+        |> Crudry.Query.search(search_params.text, search_params.fields)
+        |> Repo.all()
+
+      assert length(users) == 2
+      assert Enum.map(users, & &1.username) == ["Will Smith", "Chuck Norris"]
     end
   end
 end
