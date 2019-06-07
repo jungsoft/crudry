@@ -3,6 +3,18 @@ defmodule Crudry.Query do
   Generates Ecto Queries.
 
   All functions in this module return an `Ecto.Query`.
+
+  Combining the functions in this module can be very powerful. For example, to do pagination with filter and search:
+
+      pagination_params = %{limit: 10, offset: 1, order_by: "id", sorting_order: :desc}
+      filter_params = %{username: ["username1", "username2"]}
+      search_params = %{text: "search text", fields: [:username]}
+
+      User
+      |> Crudry.Query.filter(filter_params)
+      |> Crudry.Query.list(pagination_params)
+      |> Crudry.Query.search(search_params.text, search_params.fields)
+      |> Repo.all()
   """
 
   import Ecto.Query
@@ -10,7 +22,7 @@ defmodule Crudry.Query do
   @doc """
   Applies some restrictions to the query.
 
-  Expects `opts` to be a keyword list containing some of these fields:
+  Expects `opts` to be a keyword list or a map containing some of these fields:
 
   * `limit`: defaults to not limiting
   * `offset`: defaults to `0`
@@ -22,16 +34,18 @@ defmodule Crudry.Query do
 
       Crudry.Query.list(MySchema, [limit: 10])
       Crudry.Query.list(MySchema, [limit: 10, offset: 3, sorting_order: :desc, order_by: :value])
-      Crudry.Query.list(MySchema, [order_by: "value"])
-      Crudry.Query.list(MySchema, [order_by: :value])
-      Crudry.Query.list(MySchema, [custom_query: &MySchema.scope_list/1])
+      Crudry.Query.list(MySchema, %{order_by: "value"})
+      Crudry.Query.list(MySchema, %{order_by: :value})
+      Crudry.Query.list(MySchema, custom_query: &MySchema.scope_list/1)
   """
   def list(initial_query, opts \\ []) do
-    custom_query = Keyword.get(opts, :custom_query, nil)
-    limit = Keyword.get(opts, :limit, nil)
-    offset = Keyword.get(opts, :offset, 0)
-    sorting_order = Keyword.get(opts, :sorting_order, :asc)
-    order_by = Keyword.get(opts, :order_by)
+    access_module = get_access_module(opts)
+
+    custom_query = access_module.get(opts, :custom_query, nil)
+    limit = access_module.get(opts, :limit, nil)
+    offset = access_module.get(opts, :offset, 0)
+    sorting_order = access_module.get(opts, :sorting_order, :asc)
+    order_by = access_module.get(opts, :order_by)
     order = parse_order_by_args(sorting_order, order_by)
 
     initial_query
@@ -40,6 +54,9 @@ defmodule Crudry.Query do
     |> offset(^offset)
     |> order_by(^order)
   end
+
+  defp get_access_module(opts) when is_map(opts), do: Map
+  defp get_access_module(opts) when is_list(opts), do: Keyword
 
   @doc """
   Searches for the `search_term` in the given `fields`.
@@ -53,7 +70,7 @@ defmodule Crudry.Query do
   end
 
   def search(initial_query, search_term, fields) do
-    Enum.reduce(fields, from(initial_query), fn
+    Enum.reduce(fields, subquery(initial_query), fn
       module_field, query_acc ->
         query_acc
         |> or_where(
