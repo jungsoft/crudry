@@ -1,5 +1,7 @@
 # Crudry
 
+[![Coverage Status](https://coveralls.io/repos/github/gabrielpra1/crudry/badge.svg?branch=master)](https://coveralls.io/github/gabrielpra1/crudry?branch=master)
+
 Crudry is an elixir library for DRYing CRUD of Phoenix Contexts and Absinthe Resolvers.
 
 It also provides a simple middleware for translating changeset errors into readable messages.
