@@ -40,7 +40,7 @@ defmodule CrudryQueryTest do
     test "works with keyword list as parameter" do
       users =
         User
-        |> Crudry.Query.list([limit: 1])
+        |> Crudry.Query.list(limit: 1)
         |> Repo.all()
 
       assert length(users) == 1
@@ -65,9 +65,12 @@ defmodule CrudryQueryTest do
     end
 
     test "to do pagination" do
-      pagination_params = %{limit: 10, offset: 1, order_by: "id", sorting_order: :desc} # Removes Crudry
-      filter_params = %{username: [@user.username, @user2.username, @user3.username]} # Removes Zz
-      search_params = %{text: "i", fields: [:username]} # Removes Aa
+      # Removes Crudry
+      pagination_params = %{limit: 10, offset: 1, order_by: "id", sorting_order: :desc}
+      # Removes Zz
+      filter_params = %{username: [@user.username, @user2.username, @user3.username]}
+      # Removes Aa
+      search_params = %{text: "i", fields: [:username]}
 
       users =
         User

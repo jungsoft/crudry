@@ -6,7 +6,7 @@ defmodule Crudry.User do
     field(:username, :string)
     field(:age, :integer)
 
-    belongs_to :company, Crudry.Company
+    belongs_to(:company, Crudry.Company)
     has_many(:posts, Crudry.Post)
     has_many(:likes, Crudry.Like)
 

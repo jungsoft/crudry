@@ -100,6 +100,7 @@ defmodule Crudry.Query do
           [m],
           field(m, ^field) in ^filter_arr
         )
+
       {field, filter}, query_acc ->
         query_acc
         |> where(
