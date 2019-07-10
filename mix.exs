@@ -1,6 +1,8 @@
 defmodule Crudry.MixProject do
   use Mix.Project
 
+  @github_url "https://github.com/gabrielpra1/crudry"
+
   def project do
     [
       app: :crudry,
@@ -9,7 +11,7 @@ defmodule Crudry.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "Crudry",
-      source_url: "https://github.com/gabrielpra1/crudry",
+      source_url: @github_url,
       description: "Crudry is a library for DRYing CRUD.",
       package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -37,9 +39,9 @@ defmodule Crudry.MixProject do
   defp package do
     [
       files: ~w(lib mix.exs README*),
-      licenses: ["Apache 2.0"],
+      licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/gabrielpra1/crudry",
+        "GitHub" => @github_url,
         "Docs" => "https://hexdocs.pm/crudry/"
       }
     ]
