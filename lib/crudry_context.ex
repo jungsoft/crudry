@@ -174,6 +174,9 @@ defmodule Crudry.Context do
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
   end
 
+  # Always generate helper functions since they are used in the other generated functions
+  @helper_functions ~w(check_assocs)a
+
   @doc """
   Generates CRUD functions for the `schema_module`.
 
@@ -221,7 +224,7 @@ defmodule Crudry.Context do
     pluralized_name = Helper.get_pluralized_name(schema_module, __CALLER__)
 
     for func <- get_functions_to_be_generated(__CALLER__.module) do
-      if func == :check_assocs || Helper.define_function?(func, opts[:only], opts[:except]) do
+      if Enum.member?(@helper_functions, func) || Helper.define_function?(func, opts[:only], opts[:except]) do
         ContextFunctionsGenerator.generate_function(func, name, pluralized_name, schema_module, opts)
       end
     end
@@ -229,7 +232,7 @@ defmodule Crudry.Context do
 
   # Use an attribute in the caller's module to make sure the `check_assocs` function is only generated once per module.
   defp get_functions_to_be_generated(module) do
-    functions = [:get, :get!, :list, :search, :filter, :count, :create, :update, :delete]
+    functions = [:get, :list, :count, :search, :filter, :create, :update, :delete]
 
     if Module.get_attribute(module, :called) do
       functions
