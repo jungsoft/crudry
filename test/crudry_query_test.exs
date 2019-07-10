@@ -34,6 +34,15 @@ defmodule CrudryQueryTest do
       # the search for @user2.username shouldn't find anything
       assert length(users) == 0
     end
+
+    test "ignores search term when it is nil" do
+      users =
+        User
+        |> Crudry.Query.search(nil, [:username])
+        |> Repo.all()
+
+      assert length(users) == 2
+    end
   end
 
   describe "list/2" do

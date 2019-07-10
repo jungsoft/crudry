@@ -15,7 +15,9 @@ defmodule Crudry.MixProject do
       description: "Crudry is a library for DRYing CRUD.",
       package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      aliases: aliases()
+      aliases: aliases(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test]
     ]
   end
 
@@ -55,7 +57,8 @@ defmodule Crudry.MixProject do
       {:ecto, "~> 3.0"},
       {:ecto_sql, "~> 3.0", only: :test},
       {:postgrex, ">= 0.0.0", only: :test},
-      {:absinthe, "~> 1.4.0"}
+      {:absinthe, "~> 1.4.0"},
+      {:excoveralls, "~> 0.11", only: :test},
     ]
   end
 end
