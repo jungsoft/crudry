@@ -116,6 +116,13 @@ defmodule ContextFunctionsGenerator do
         |> unquote(module).unquote(opts[:create])(attrs)
         |> alias!(Repo).insert()
       end
+
+      def unquote(:"create_#{name}!")(attrs) do
+        unquote(module)
+        |> struct()
+        |> unquote(module).unquote(opts[:create])(attrs)
+        |> alias!(Repo).insert!()
+      end
     end
   end
 
@@ -127,10 +134,22 @@ defmodule ContextFunctionsGenerator do
         |> alias!(Repo).update()
       end
 
+      def unquote(:"update_#{name}!")(%module{} = struct, attrs) do
+        struct
+        |> unquote(module).unquote(opts[:update])(attrs)
+        |> alias!(Repo).update!()
+      end
+
       def unquote(:"update_#{name}")(id, attrs) do
         id
         |> unquote(:"get_#{name}")()
         |> unquote(:"update_#{name}")(attrs)
+      end
+
+      def unquote(:"update_#{name}!")(id, attrs) do
+        id
+        |> unquote(:"get_#{name}")()
+        |> unquote(:"update_#{name}!")(attrs)
       end
 
       def unquote(:"update_#{name}_with_assocs")(%module{} = struct, attrs, assocs) do
@@ -140,10 +159,23 @@ defmodule ContextFunctionsGenerator do
         |> alias!(Repo).update()
       end
 
+      def unquote(:"update_#{name}_with_assocs!")(%module{} = struct, attrs, assocs) do
+        struct
+        |> alias!(Repo).preload(assocs)
+        |> unquote(module).unquote(opts[:update])(attrs)
+        |> alias!(Repo).update!()
+      end
+
       def unquote(:"update_#{name}_with_assocs")(id, attrs, assocs) do
         id
         |> unquote(:"get_#{name}")()
         |> unquote(:"update_#{name}_with_assocs")(attrs, assocs)
+      end
+
+      def unquote(:"update_#{name}_with_assocs!")(id, attrs, assocs) do
+        id
+        |> unquote(:"get_#{name}")()
+        |> unquote(:"update_#{name}_with_assocs!")(attrs, assocs)
       end
     end
   end
@@ -157,10 +189,23 @@ defmodule ContextFunctionsGenerator do
         |> alias!(Repo).delete()
       end
 
+      def unquote(:"delete_#{name}!")(%module{} = struct) do
+        struct
+        |> Ecto.Changeset.change()
+        |> check_assocs(unquote(opts[:check_constraints_on_delete]))
+        |> alias!(Repo).delete!()
+      end
+
       def unquote(:"delete_#{name}")(id) do
         id
         |> unquote(:"get_#{name}")()
         |> unquote(:"delete_#{name}")()
+      end
+
+      def unquote(:"delete_#{name}!")(id) do
+        id
+        |> unquote(:"get_#{name}")()
+        |> unquote(:"delete_#{name}!")()
       end
     end
   end

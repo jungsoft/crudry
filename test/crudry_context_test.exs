@@ -34,6 +34,11 @@ defmodule CrudryContextTest do
       assert {:ok, %Crudry.User{username: ^username}} = UserContext.create_user(@user)
     end
 
+    test "create!/1" do
+      username = @user.username
+      assert %Crudry.User{username: ^username} = UserContext.create_user!(@user)
+    end
+
     test "list/0", %{user1: user1, user2: user2, user3: user3} do
       assert UserContext.list_users() == [user1, user2, user3]
     end
@@ -116,6 +121,11 @@ defmodule CrudryContextTest do
       assert {:ok, %User{username: "brand new"}} = UserContext.update_user(user1.id, %{username: "brand new"})
     end
 
+    test "update!/2", %{user1: user1} do
+      assert %User{username: "new"} = UserContext.update_user!(user1, %{username: "new"})
+      assert %User{username: "brand new"} = UserContext.update_user!(user1.id, %{username: "brand new"})
+    end
+
     test "update_with_assocs/3", %{user2: user2, user3: user3} do
       assert {:ok, %User{username: "new", posts: [%Post{title: "post"}]}} =
         UserContext.update_user_with_assocs(user2, %{username: "new", posts: [%{title: "post"}]}, :posts)
@@ -124,9 +134,25 @@ defmodule CrudryContextTest do
         UserContext.update_user_with_assocs(user3.id, %{username: "new", posts: [%{title: "post"}]}, :posts)
     end
 
+    test "update_with_assocs!/3", %{user2: user2, user3: user3} do
+      assert %User{username: "new", posts: [%Post{title: "post"}]} =
+        UserContext.update_user_with_assocs!(user2, %{username: "new", posts: [%{title: "post"}]}, :posts)
+
+      assert %User{username: "new", posts: [%Post{title: "post"}]} =
+        UserContext.update_user_with_assocs!(user3.id, %{username: "new", posts: [%{title: "post"}]}, :posts)
+    end
+
     test "delete/1", %{user2: user2, user3: user3} do
       assert {:ok, user2} = UserContext.delete_user(user2)
       assert {:ok, user3} = UserContext.delete_user(user3.id)
+
+      assert UserContext.get_user(user2.id) == nil
+      assert UserContext.get_user(user3.id) == nil
+    end
+
+    test "delete!/1", %{user2: user2, user3: user3} do
+      assert user2 = UserContext.delete_user!(user2)
+      assert user3 = UserContext.delete_user!(user3.id)
 
       assert UserContext.get_user(user2.id) == nil
       assert UserContext.get_user(user3.id) == nil
