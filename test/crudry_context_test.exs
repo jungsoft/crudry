@@ -38,8 +38,16 @@ defmodule CrudryContextTest do
       assert UserContext.list_users() == [user1, user2, user3]
     end
 
+    test "list_with_assocs/1", %{user1: user1, user2: user2, user3: user3} do
+      assert UserContext.list_users_with_assocs(:posts) == Repo.preload([user1, user2, user3], :posts)
+    end
+
     test "list/1", %{user1: user1} do
       assert UserContext.list_users(limit: 1) == [user1]
+    end
+
+    test "list_with_assocs/2", %{user1: user1} do
+      assert UserContext.list_users_with_assocs(:posts, limit: 1) == Repo.preload([user1], :posts)
     end
 
     test "search/1", %{user1: user1} do

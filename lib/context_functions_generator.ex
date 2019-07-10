@@ -61,6 +61,19 @@ defmodule ContextFunctionsGenerator do
         |> Crudry.Query.list(opts)
         |> alias!(Repo).all()
       end
+
+      def unquote(:"list_#{pluralized_name}_with_assocs")(assocs) do
+        unquote(module)
+        |> alias!(Repo).all()
+        |> alias!(Repo).preload(assocs)
+      end
+
+      def unquote(:"list_#{pluralized_name}_with_assocs")(assocs, opts) do
+        unquote(module)
+        |> Crudry.Query.list(opts)
+        |> alias!(Repo).all()
+        |> alias!(Repo).preload(assocs)
+      end
     end
   end
 
