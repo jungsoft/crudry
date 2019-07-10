@@ -309,4 +309,25 @@ defmodule CrudryResolverTest do
     assert new_user.company_id == company.id
     assert new_user.username == params.username
   end
+
+  test "Custom create_resolver can be defined as default" do
+    defmodule UserResolverDefault do
+      def create_resolver(context, schema_name, args, %{context: %{current_user: %{company_id: company_id}}}) do
+        apply(context, :"create_#{schema_name}", [Map.put(args.params, :company_id, company_id)])
+      end
+
+      Crudry.Resolver.default create_resolver: &create_resolver/4
+      Crudry.Resolver.generate_functions Users, User
+    end
+
+    {:ok, company} = Companies.create_company(%{name: "Nike"})
+    {:ok, user} = Users.create_user(%{username: "test", company_id: company.id})
+    info = %{context: %{current_user: user}}
+    params = %{username: "Jonas"}
+
+    {:ok, new_user} = UserResolverDefault.create_user(%{params: params}, info)
+
+    assert new_user.company_id == company.id
+    assert new_user.username == params.username
+  end
 end

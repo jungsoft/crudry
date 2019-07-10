@@ -66,7 +66,7 @@ defmodule Crudry.Query do
       Crudry.Query.search(MySchema, "John", [:name])
   """
   def search(initial_query, nil, _fields) do
-    from(initial_query)
+    initial_query
   end
 
   def search(initial_query, search_term, fields) do
