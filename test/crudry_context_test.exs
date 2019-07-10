@@ -250,19 +250,22 @@ defmodule CrudryContextTest do
         Crudry.Context.generate_functions(Crudry.User, only: [:create, :list])
       end
 
-      assert {:ok, %Crudry.User{} = user} = ContextOnly.create_user(@user)
-      assert ContextOnly.list_users() == [user]
-      assert length(ContextOnly.__info__(:functions)) == 3
+      assert Enum.member?(ContextOnly.__info__(:functions), {:create_user, 1})
+      assert Enum.member?(ContextOnly.__info__(:functions), {:list_users, 0})
+      assert Enum.member?(ContextOnly.__info__(:functions), {:list_users, 1})
+      assert Enum.member?(ContextOnly.__info__(:functions), {:list_users_with_assocs, 1})
+      assert Enum.member?(ContextOnly.__info__(:functions), {:list_users_with_assocs, 2})
+      refute Enum.member?(ContextOnly.__info__(:functions), {:get_user, 1})
     end
 
     test "using except" do
       defmodule ContextExcept do
-        Crudry.Context.generate_functions(Crudry.User, except: [:get!, :list, :delete])
+        Crudry.Context.generate_functions(Crudry.User, except: [:get, :update, :list, :delete])
       end
 
-      assert {:ok, %Crudry.User{id: id} = user} = ContextExcept.create_user(@user)
-      assert ContextExcept.get_user(id) == user
-      assert length(ContextExcept.__info__(:functions)) == 9
+      assert Enum.member?(ContextExcept.__info__(:functions), {:create_user, 1})
+      refute Enum.member?(ContextExcept.__info__(:functions), {:get_user, 1})
+      refute Enum.member?(ContextExcept.__info__(:functions), {:delete_user, 1})
     end
 
     test "using default only" do
@@ -271,20 +274,23 @@ defmodule CrudryContextTest do
         Crudry.Context.generate_functions(Crudry.User)
       end
 
-      assert {:ok, %Crudry.User{} = user} = ContextOnlyDefault.create_user(@user)
-      assert ContextOnlyDefault.list_users() == [user]
-      assert length(ContextOnlyDefault.__info__(:functions)) == 3
+      assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:create_user, 1})
+      assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:list_users, 0})
+      assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:list_users, 1})
+      assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:list_users_with_assocs, 1})
+      assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:list_users_with_assocs, 2})
+      refute Enum.member?(ContextOnlyDefault.__info__(:functions), {:get_user, 1})
     end
 
     test "using default except" do
       defmodule ContextExceptDefault do
-        Crudry.Context.default(except: [:get!, :list, :delete])
+        Crudry.Context.default(except: [:get, :update, :list, :delete])
         Crudry.Context.generate_functions(Crudry.User)
       end
 
-      assert {:ok, %Crudry.User{id: id} = user} = ContextExceptDefault.create_user(@user)
-      assert ContextExceptDefault.get_user(id) == user
-      assert length(ContextExceptDefault.__info__(:functions)) == 9
+      assert Enum.member?(ContextExceptDefault.__info__(:functions), {:create_user, 1})
+      refute Enum.member?(ContextExceptDefault.__info__(:functions), {:get_user, 1})
+      refute Enum.member?(ContextExceptDefault.__info__(:functions), {:delete_user, 1})
     end
   end
 
