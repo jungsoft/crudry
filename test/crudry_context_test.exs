@@ -34,12 +34,25 @@ defmodule CrudryContextTest do
       assert {:ok, %Crudry.User{username: ^username}} = UserContext.create_user(@user)
     end
 
+    test "create!/1" do
+      username = @user.username
+      assert %Crudry.User{username: ^username} = UserContext.create_user!(@user)
+    end
+
     test "list/0", %{user1: user1, user2: user2, user3: user3} do
       assert UserContext.list_users() == [user1, user2, user3]
     end
 
+    test "list_with_assocs/1", %{user1: user1, user2: user2, user3: user3} do
+      assert UserContext.list_users_with_assocs(:posts) == Repo.preload([user1, user2, user3], :posts)
+    end
+
     test "list/1", %{user1: user1} do
       assert UserContext.list_users(limit: 1) == [user1]
+    end
+
+    test "list_with_assocs/2", %{user1: user1} do
+      assert UserContext.list_users_with_assocs(:posts, limit: 1) == Repo.preload([user1], :posts)
     end
 
     test "search/1", %{user1: user1} do
@@ -67,8 +80,24 @@ defmodule CrudryContextTest do
       end
     end
 
+    test "get_by/1", %{user1: user1} do
+      assert UserContext.get_user_by(username: user1.username) == user1
+      assert UserContext.get_user_by(username: "inexistent") == nil
+    end
+
+    test "get_by!/1", %{user1: user1} do
+      assert UserContext.get_user_by!(username: user1.username) == user1
+      assert_raise Ecto.NoResultsError, fn ->
+        UserContext.get_user_by!(username: "inexistent")
+      end
+    end
+
     test "get_with_assocs/2", %{user1: user1} do
       assert UserContext.get_user_with_assocs(user1.id, :posts) == Repo.preload(user1, :posts)
+    end
+
+    test "get_by_with_assocs/2", %{user1: user1} do
+      assert UserContext.get_user_by_with_assocs([username: user1.username], :posts) == Repo.preload(user1, :posts)
     end
 
     test "get_with_assocs!/2", %{user1: user1} do
@@ -79,9 +108,22 @@ defmodule CrudryContextTest do
       end
     end
 
+    test "get_by_with_assocs!/2", %{user1: user1} do
+      assert UserContext.get_user_by_with_assocs!([username: user1.username], :posts) == Repo.preload(user1, :posts)
+
+      assert_raise Ecto.NoResultsError, fn ->
+        UserContext.get_user_by_with_assocs!([username: "inexistent"], :posts)
+      end
+    end
+
     test "update/2", %{user1: user1} do
       assert {:ok, %User{username: "new"}} = UserContext.update_user(user1, %{username: "new"})
       assert {:ok, %User{username: "brand new"}} = UserContext.update_user(user1.id, %{username: "brand new"})
+    end
+
+    test "update!/2", %{user1: user1} do
+      assert %User{username: "new"} = UserContext.update_user!(user1, %{username: "new"})
+      assert %User{username: "brand new"} = UserContext.update_user!(user1.id, %{username: "brand new"})
     end
 
     test "update_with_assocs/3", %{user2: user2, user3: user3} do
@@ -92,9 +134,25 @@ defmodule CrudryContextTest do
         UserContext.update_user_with_assocs(user3.id, %{username: "new", posts: [%{title: "post"}]}, :posts)
     end
 
+    test "update_with_assocs!/3", %{user2: user2, user3: user3} do
+      assert %User{username: "new", posts: [%Post{title: "post"}]} =
+        UserContext.update_user_with_assocs!(user2, %{username: "new", posts: [%{title: "post"}]}, :posts)
+
+      assert %User{username: "new", posts: [%Post{title: "post"}]} =
+        UserContext.update_user_with_assocs!(user3.id, %{username: "new", posts: [%{title: "post"}]}, :posts)
+    end
+
     test "delete/1", %{user2: user2, user3: user3} do
       assert {:ok, user2} = UserContext.delete_user(user2)
       assert {:ok, user3} = UserContext.delete_user(user3.id)
+
+      assert UserContext.get_user(user2.id) == nil
+      assert UserContext.get_user(user3.id) == nil
+    end
+
+    test "delete!/1", %{user2: user2, user3: user3} do
+      assert user2 = UserContext.delete_user!(user2)
+      assert user3 = UserContext.delete_user!(user3.id)
 
       assert UserContext.get_user(user2.id) == nil
       assert UserContext.get_user(user3.id) == nil
@@ -192,19 +250,22 @@ defmodule CrudryContextTest do
         Crudry.Context.generate_functions(Crudry.User, only: [:create, :list])
       end
 
-      assert {:ok, %Crudry.User{} = user} = ContextOnly.create_user(@user)
-      assert ContextOnly.list_users() == [user]
-      assert length(ContextOnly.__info__(:functions)) == 3
+      assert Enum.member?(ContextOnly.__info__(:functions), {:create_user, 1})
+      assert Enum.member?(ContextOnly.__info__(:functions), {:list_users, 0})
+      assert Enum.member?(ContextOnly.__info__(:functions), {:list_users, 1})
+      assert Enum.member?(ContextOnly.__info__(:functions), {:list_users_with_assocs, 1})
+      assert Enum.member?(ContextOnly.__info__(:functions), {:list_users_with_assocs, 2})
+      refute Enum.member?(ContextOnly.__info__(:functions), {:get_user, 1})
     end
 
     test "using except" do
       defmodule ContextExcept do
-        Crudry.Context.generate_functions(Crudry.User, except: [:get!, :list, :delete])
+        Crudry.Context.generate_functions(Crudry.User, except: [:get, :update, :list, :delete])
       end
 
-      assert {:ok, %Crudry.User{id: id} = user} = ContextExcept.create_user(@user)
-      assert ContextExcept.get_user(id) == user
-      assert length(ContextExcept.__info__(:functions)) == 9
+      assert Enum.member?(ContextExcept.__info__(:functions), {:create_user, 1})
+      refute Enum.member?(ContextExcept.__info__(:functions), {:get_user, 1})
+      refute Enum.member?(ContextExcept.__info__(:functions), {:delete_user, 1})
     end
 
     test "using default only" do
@@ -213,20 +274,23 @@ defmodule CrudryContextTest do
         Crudry.Context.generate_functions(Crudry.User)
       end
 
-      assert {:ok, %Crudry.User{} = user} = ContextOnlyDefault.create_user(@user)
-      assert ContextOnlyDefault.list_users() == [user]
-      assert length(ContextOnlyDefault.__info__(:functions)) == 3
+      assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:create_user, 1})
+      assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:list_users, 0})
+      assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:list_users, 1})
+      assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:list_users_with_assocs, 1})
+      assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:list_users_with_assocs, 2})
+      refute Enum.member?(ContextOnlyDefault.__info__(:functions), {:get_user, 1})
     end
 
     test "using default except" do
       defmodule ContextExceptDefault do
-        Crudry.Context.default(except: [:get!, :list, :delete])
+        Crudry.Context.default(except: [:get, :update, :list, :delete])
         Crudry.Context.generate_functions(Crudry.User)
       end
 
-      assert {:ok, %Crudry.User{id: id} = user} = ContextExceptDefault.create_user(@user)
-      assert ContextExceptDefault.get_user(id) == user
-      assert length(ContextExceptDefault.__info__(:functions)) == 9
+      assert Enum.member?(ContextExceptDefault.__info__(:functions), {:create_user, 1})
+      refute Enum.member?(ContextExceptDefault.__info__(:functions), {:get_user, 1})
+      refute Enum.member?(ContextExceptDefault.__info__(:functions), {:delete_user, 1})
     end
   end
 

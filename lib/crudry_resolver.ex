@@ -143,6 +143,7 @@ defmodule Crudry.Resolver do
     Module.put_attribute(__CALLER__.module, :create_resolver, opts[:create_resolver])
   end
 
+  @all_functions ~w(get list create update delete)a
   # Always generate helper functions since they are used in the other generated functions
   @helper_functions ~w(nil_to_error add_info_to_custom_query)a
 
@@ -177,22 +178,8 @@ defmodule Crudry.Resolver do
     pluralized_name = Helper.get_pluralized_name(schema_module, __CALLER__)
     _ = String.to_atom(name)
 
-    for func <- get_functions_to_be_generated(__CALLER__.module) do
-      if Enum.member?(@helper_functions, func) || Helper.define_function?(func, opts[:only], opts[:except]) do
-        ResolverFunctionsGenerator.generate_function(func, name, pluralized_name, context, opts)
-      end
-    end
-  end
-
-  # Use an attribute in the caller's module to make sure helper functions are only generated once per module.
-  defp get_functions_to_be_generated(module) do
-    functions = [:get, :list, :create, :update, :delete]
-
-    if Module.get_attribute(module, :called) do
-      functions
-    else
-      Module.put_attribute(module, :called, true)
-      @helper_functions ++ functions
+    for func <- Helper.get_functions_to_be_generated(__CALLER__.module, @all_functions, @helper_functions, opts) do
+      ResolverFunctionsGenerator.generate_function(func, name, pluralized_name, context, opts)
     end
   end
 

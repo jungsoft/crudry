@@ -41,18 +41,32 @@ defmodule Helper do
   end
 
   @doc """
-  Given the `only` and `except` options, check if a given function should be defined.
-  Here, `function` is an atom: :get, :get!, :list, :create, :update or :delete
+  Uses an attribute in the caller's module to make sure the helper functions are only generated once per module.
   """
-  def define_function?(_function, [] = _only, [] = _except) do
-    true
+  def get_functions_to_be_generated(module, all_functions, helper_functions, opts) do
+    functions = filter_functions_to_be_generated(all_functions, opts[:only], opts[:except])
+
+    if Module.get_attribute(module, :called) do
+      functions
+    else
+      Module.put_attribute(module, :called, true)
+      helper_functions ++ functions
+    end
   end
 
-  def define_function?(function, only, [] = _except) do
-    Enum.member?(only, function)
+  @doc """
+  Given the `only` and `except` options, return which functions should be generated.
+  Here, `function` is an atom: :get, :list, etc.
+  """
+  def filter_functions_to_be_generated(_all_functions, [_ | _] = only, _except) do
+    only
   end
 
-  def define_function?(function, [] = _only, except) do
-    !Enum.member?(except, function)
+  def filter_functions_to_be_generated(all_functions, _only, [_ | _] =  except) do
+    all_functions -- except
+  end
+
+  def filter_functions_to_be_generated(all_functions, _only, _except) do
+    all_functions
   end
 end
