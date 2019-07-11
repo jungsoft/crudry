@@ -17,7 +17,7 @@ defmodule Crudry.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       aliases: aliases(),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test]
+      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test]
     ]
   end
 
@@ -53,7 +53,6 @@ defmodule Crudry.MixProject do
   defp deps do
     [
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
-      {:inflex, "~> 1.10.0"},
       {:ecto, "~> 3.0"},
       {:ecto_sql, "~> 3.0", only: :test},
       {:postgrex, ">= 0.0.0", only: :test},
