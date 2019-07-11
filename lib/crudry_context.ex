@@ -337,14 +337,15 @@ defmodule Crudry.Context do
     stale_error_field = Module.get_attribute(module, :stale_error_field)
     stale_error_message = Module.get_attribute(module, :stale_error_message)
 
-    [
+    opts = [
       create: create_changeset || :changeset,
       update: update_changeset || :changeset,
       only: only || [],
       except: except || [],
       check_constraints_on_delete: [],
-      stale_error_field: stale_error_field || :id,
+      stale_error_field: stale_error_field,
       stale_error_message: stale_error_message || "not found"
     ]
+    Enum.reject(opts, fn {_key, value} -> is_nil(value) end)
   end
 end

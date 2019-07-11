@@ -127,6 +127,8 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:update, name, _pluralized_name, module, opts) do
+    opts = Keyword.merge([stale_error_field: String.to_atom(name)], opts)
+
     quote do
       def unquote(:"update_#{name}")(%module{} = struct, attrs) do
         struct
@@ -195,6 +197,8 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:delete, name, __pluralized_name, module, opts) do
+    opts = Keyword.merge([stale_error_field: String.to_atom(name)], opts)
+
     quote do
       def unquote(:"delete_#{name}")(%module{} = struct) do
         struct

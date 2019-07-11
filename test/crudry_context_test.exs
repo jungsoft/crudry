@@ -125,10 +125,10 @@ defmodule CrudryContextTest do
     test "update/2 when record does not exist", %{user1: user1} do
       user_error = Map.put(user1, :id, -1)
       assert {:error, %Changeset{errors: errors}} = UserContext.update_user(user_error, %{username: "new"})
-      assert errors == [id: {"not found", [stale: true]}]
+      assert errors == [user: {"not found", [stale: true]}]
 
       assert {:error, %Changeset{errors: errors}} = UserContext.update_user(-1, %{username: "new"})
-      assert errors == [id: {"not found", [stale: true]}]
+      assert errors == [user: {"not found", [stale: true]}]
     end
 
     test "update!/2 with correct arguments", %{user1: user1} do
@@ -158,10 +158,10 @@ defmodule CrudryContextTest do
     test "update_with_assocs/3 when record does not exist", %{user2: user2} do
       user_error = Map.put(user2, :id, -1)
       assert {:error, %Changeset{errors: errors}} = UserContext.update_user_with_assocs(user_error, %{username: "new", posts: [%{title: "post"}]}, :posts)
-      assert errors == [id: {"not found", [stale: true]}]
+      assert errors == [user: {"not found", [stale: true]}]
 
       assert {:error, %Changeset{errors: errors}} = UserContext.update_user_with_assocs(-1, %{username: "new", posts: [%{title: "post"}]}, :posts)
-      assert errors == [id: {"not found", [stale: true]}]
+      assert errors == [user: {"not found", [stale: true]}]
     end
 
     test "update_with_assocs!/3", %{user2: user2, user3: user3} do
@@ -183,10 +183,10 @@ defmodule CrudryContextTest do
     test "delete/1 when record does not exist", %{user2: user2} do
       user_error = Map.put(user2, :id, -1)
       assert {:error, %Changeset{errors: errors}} = UserContext.delete_user(user_error)
-      assert errors == [id: {"not found", [stale: true]}]
+      assert errors == [user: {"not found", [stale: true]}]
 
       assert {:error, %Changeset{errors: errors}} = UserContext.delete_user(-1)
-      assert errors == [id: {"not found", [stale: true]}]
+      assert errors == [user: {"not found", [stale: true]}]
     end
 
     test "delete!/1", %{user2: user2, user3: user3} do
