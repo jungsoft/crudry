@@ -216,6 +216,7 @@ defmodule ContextFunctionsGenerator do
         unquote(module)
         |> struct()
         |> Ecto.Changeset.change()
+        |> check_assocs(unquote(opts[:check_constraints_on_delete]))
         |> Ecto.Changeset.add_error(opts[:stale_error_field], opts[:stale_error_message], [stale: true])
         |> alias!(Repo).delete(opts)
       end
