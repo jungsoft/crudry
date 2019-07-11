@@ -137,24 +137,35 @@ defmodule Crudry.Context do
 
   """
 
+  @all_functions ~w(get list count search filter create update delete)a
+  # Always generate helper functions since they are used in the other generated functions
+  @helper_functions ~w(check_assocs)a
+
   @doc """
   Sets default options for the context.
 
   ## Options
 
     * `:create` - the name of the changeset function used in the `create` function.
-    Default to `:changeset`.
+    Defaults to `:changeset`.
 
     * `:update` - the name of the changeset function used in the `update` function.
-    Default to `:changeset`.
+    Defaults to `:changeset`.
 
     * `:only` - list of functions to be generated. If not empty, functions not
-    specified in this list are not generated. Default to `[]`.
+    specified in this list are not generated. Defaults to `[]`.
 
     * `:except` - list of functions to not be generated. If not empty, only functions not specified
-    in this list will be generated. Default to `[]`.
+    in this list will be generated. Defaults to `[]`.
 
-    The accepted values for `:only` and `:except` are: `[:get, :get!, :list, :search, :filter, :count, :create, :update, :delete]`.
+    * `:stale_error_field` - The field where stale errors will be added in the returning changeset.
+    This is also used when updating or deleting by ID and the record is not found.
+    See [Repo.Update options](https://hexdocs.pm/ecto/Ecto.Repo.html#c:update/2-options) for more information.
+    Defaults to `:id`
+
+    * `:stale_error_message` - The message to add to the configured :stale_error_field when stale errors happen. Defaults to "not found".
+
+    The accepted values for `:only` and `:except` are: `#{inspect(@all_functions)}`.
 
   ## Examples
 
@@ -172,11 +183,9 @@ defmodule Crudry.Context do
     Module.put_attribute(__CALLER__.module, :update_changeset, opts[:update])
     Module.put_attribute(__CALLER__.module, :only, opts[:only])
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
+    Module.put_attribute(__CALLER__.module, :stale_error_field, opts[:stale_error_field])
+    Module.put_attribute(__CALLER__.module, :stale_error_message, opts[:stale_error_message])
   end
-
-  @all_functions ~w(get list count search filter create update delete)a
-  # Always generate helper functions since they are used in the other generated functions
-  @helper_functions ~w(check_assocs)a
 
   @doc """
   Generates CRUD functions for the `schema_module`.
@@ -235,13 +244,17 @@ defmodule Crudry.Context do
     update_changeset = Module.get_attribute(module, :update_changeset)
     only = Module.get_attribute(module, :only)
     except = Module.get_attribute(module, :except)
+    stale_error_field = Module.get_attribute(module, :stale_error_field)
+    stale_error_message = Module.get_attribute(module, :stale_error_message)
 
     [
       create: create_changeset || :changeset,
       update: update_changeset || :changeset,
       only: only || [],
       except: except || [],
-      check_constraints_on_delete: []
+      check_constraints_on_delete: [],
+      stale_error_field: stale_error_field || :id,
+      stale_error_message: stale_error_message || "not found"
     ]
   end
 end

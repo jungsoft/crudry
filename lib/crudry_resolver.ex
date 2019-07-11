@@ -95,24 +95,28 @@ defmodule Crudry.Resolver do
     Now when creating `MySchema` and `OtherSchema`, the custom function will put the user's `company_id` in the params.
   """
 
+  @all_functions ~w(get list create update delete)a
+  # Always generate helper functions since they are used in the other generated functions
+  @helper_functions ~w(nil_to_error add_info_to_custom_query)a
+
   @doc """
   Sets default options for the resolver.
 
   ## Options
 
     * `:only` - list of functions to be generated. If not empty, functions not
-    specified in this list are not generated. Default to `[]`.
+    specified in this list are not generated. Defaults to `[]`.
 
     * `:except` - list of functions to not be generated. If not empty, only functions not specified
-    in this list will be generated. Default to `[]`.
+    in this list will be generated. Defaults to `[]`.
 
-    * `list_opts` - options for the `list` function. See available options in `Crudry.Query.list/2`. Default to `[]`.
+    * `list_opts` - options for the `list` function. See available options in `Crudry.Query.list/2`. Defaults to `[]`.
 
-    * `create_resolver` - custom `create` resolver function with arity 4. Receives the following arguments: [Context, schema_name, args, info]. Default to `nil`.
+    * `create_resolver` - custom `create` resolver function with arity 4. Receives the following arguments: [Context, schema_name, args, info]. Defaults to `nil`.
 
     Note: in list_opts, custom_query will receive absinthe's info as the second argument and, therefore, must have arity 2. See example below.
 
-    The accepted values for `:only` and `:except` are: `[:get, :list, :create, :update, :delete]`.
+    The accepted values for `:only` and `:except` are: `#{inspect(@all_functions)}`.
 
   ## Examples
 
@@ -142,10 +146,6 @@ defmodule Crudry.Resolver do
     Module.put_attribute(__CALLER__.module, :list_opts, opts[:list_opts])
     Module.put_attribute(__CALLER__.module, :create_resolver, opts[:create_resolver])
   end
-
-  @all_functions ~w(get list create update delete)a
-  # Always generate helper functions since they are used in the other generated functions
-  @helper_functions ~w(nil_to_error add_info_to_custom_query)a
 
   @doc """
   Generates CRUD functions for the `schema_module` resolver.
