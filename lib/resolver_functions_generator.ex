@@ -5,7 +5,7 @@ defmodule ResolverFunctionsGenerator do
     quote do
       def unquote(:"get_#{name}")(%{id: id}, _info) do
         apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id])
-        |> nil_to_error(unquote(name), fn record -> {:ok, record} end)
+        |> nil_to_error(Macro.camelize(unquote(name)), fn record -> {:ok, record} end)
       end
     end
   end
@@ -41,13 +41,7 @@ defmodule ResolverFunctionsGenerator do
   def generate_function(:update, name, _pluralized_name, context, _opts) do
     quote do
       def unquote(:"update_#{name}")(%{id: id, params: params}, _info) do
-        apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id])
-        |> nil_to_error(unquote(name), fn record ->
-          apply(unquote(context), String.to_existing_atom("update_#{unquote(name)}"), [
-            record,
-            params
-          ])
-        end)
+        apply(unquote(context), String.to_existing_atom("update_#{unquote(name)}"), [id, params])
       end
     end
   end
@@ -55,10 +49,7 @@ defmodule ResolverFunctionsGenerator do
   def generate_function(:delete, name, _pluralized_name, context, _opts) do
     quote do
       def unquote(:"delete_#{name}")(%{id: id}, _info) do
-        apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id])
-        |> nil_to_error(unquote(name), fn record ->
-          apply(unquote(context), String.to_existing_atom("delete_#{unquote(name)}"), [record])
-        end)
+        apply(unquote(context), String.to_existing_atom("delete_#{unquote(name)}"), [id])
       end
     end
   end
@@ -67,7 +58,7 @@ defmodule ResolverFunctionsGenerator do
     quote do
       def unquote(:nil_to_error)(result, name, func) do
         case result do
-          nil -> {:error, "#{Macro.camelize(name)} not found."}
+          nil -> {:error, "#{name} not found"}
           %{} = record -> func.(record)
         end
       end

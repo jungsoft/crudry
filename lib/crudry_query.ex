@@ -28,7 +28,7 @@ defmodule Crudry.Query do
   * `offset`: defaults to `0`
   * `sorting_order`: defaults to `:asc` (only works if there is also a `order_by` specified)
   * `order_by`: defaults to not ordering
-  * `custom_query`: A function that receives the initial query as argument and returns a custom query. Defaults to initial_query
+  * `custom_query`: A function that receives the initial query as argument and returns a custom query. Defaults to `initial_query`
 
   ## Examples
 

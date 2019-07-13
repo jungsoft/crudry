@@ -20,37 +20,91 @@ defmodule Crudry.Context do
         Crudry.Context.generate_functions MySchema
       end
 
-  And the context will become
+  And the context will have all these functions available:
 
       defmodule MyApp.MyContext do
         alias MyApp.Repo
         alias MyApp.MySchema
         require Crudry.Context
 
+        ## Get functions
+
         def get_my_schema(id) do
           Repo.get(MySchema, id)
-        end
-
-        def get_my_schema_with_assocs(id, assocs) do
-          Repo.get(MySchema, id)
-          |> Repo.preload(assocs)
         end
 
         def get_my_schema!(id) do
           Repo.get!(MySchema, id)
         end
 
-        def get_my_schema_with_assocs!(id, assocs) do
-          Repo.get!(MySchema, id)
+        def get_my_schema_with_assocs(id, assocs) do
+          MySchema
+          |> Repo.get(id)
           |> Repo.preload(assocs)
         end
+
+        def get_my_schema_with_assocs!(id, assocs) do
+          MySchema
+          |> Repo.get!(id)
+          |> Repo.preload(assocs)
+        end
+
+        def get_my_schema_by(clauses) do
+          Repo.get_by(MySchema, clauses)
+        end
+
+        def get_my_schema_by!(clauses) do
+          Repo.get_by!(MySchema, clauses)
+        end
+
+        def get_my_schema_by_with_assocs(clauses, assocs) do
+          MySchema
+          |> Repo.get_by(clauses)
+          |> Repo.preload(assocs)
+        end
+
+        def get_my_schema_by_with_assocs!(clauses, assocs) do
+          MySchema
+          |> Repo.get_by!(clauses)
+          |> Repo.preload(assocs)
+        end
+
+        ## List functions
 
         def list_my_schemas() do
           Repo.all(MySchema)
         end
 
         def list_my_schemas(opts) do
-          Crudry.Query.list(MySchema, opts)
+          MySchema
+          |> Crudry.Query.list(opts)
+          |> Repo.all()
+        end
+
+        def list_my_schemas_with_assocs(assocs) do
+          MySchema
+          |> Repo.all()
+          |> Repo.preload(assocs)
+        end
+
+        def list_my_schemas_with_assocs(assocs, opts) do
+          MySchema
+          |> Crudry.Query.list(opts)
+          |> Repo.all()
+          |> Repo.preload(assocs)
+        end
+
+        def filter_my_schemas(filters) do
+          MySchema
+          |> Crudry.Query.filter(filters)
+          |> Repo.all()
+        end
+
+        def search_my_schemas(search_term) do
+          module_fields = MySchema.__schema__(:fields)
+
+          MySchema
+          |> Crudry.Query.search(search_term, module_fields)
           |> Repo.all()
         end
 
@@ -58,17 +112,7 @@ defmodule Crudry.Context do
           Repo.aggregate(MySchema, :count, field)
         end
 
-        def search_my_schemas(search_term) do
-          module_fields = MySchema.__schema__(:fields)
-
-          Crudry.Query.search(MySchema, search_term, module_fields)
-          |> Repo.all()
-        end
-
-        def filter_my_schemas(filters) do
-          Crudry.Query.filter(MySchema, filters)
-          |> Repo.all()
-        end
+        ## Create functions
 
         def create_my_schema(attrs) do
           %MySchema{}
@@ -76,9 +120,30 @@ defmodule Crudry.Context do
           |> Repo.insert()
         end
 
+        def create_my_schema!(attrs) do
+          %MySchema{}
+          |> MySchema.changeset(attrs)
+          |> Repo.insert!()
+        end
+
+        ## Update functions
+
         def update_my_schema(%MySchema{} = my_schema, attrs) do
           my_schema
           |> MySchema.changeset(attrs)
+          |> Repo.update()
+        end
+
+        def update_my_schema!(%MySchema{} = my_schema, attrs) do
+          my_schema
+          |> MySchema.changeset(attrs)
+          |> Repo.update!()
+        end
+
+        def update_my_schema(nil, attrs) do
+          %MySchema{}
+          |> MySchema.changeset(attrs)
+          |> Ecto.Changeset.add_error(:id, "not found", [stale: true])
           |> Repo.update()
         end
 
@@ -88,11 +153,28 @@ defmodule Crudry.Context do
           |> update_my_schema(attrs)
         end
 
+        def update_my_schema!(id, attrs) do
+          id
+          |> get_my_schema!()
+          |> update_my_schema!(attrs)
+        end
+
         def update_my_schema_with_assocs(%MySchema{} = my_schema, attrs, assocs) do
           my_schema
           |> Repo.preload(assocs)
           |> MySchema.changeset(attrs)
           |> Repo.update()
+        end
+
+        def update_my_schema_with_assocs!(%MySchema{} = my_schema, attrs, assocs) do
+          my_schema
+          |> Repo.preload(assocs)
+          |> MySchema.changeset(attrs)
+          |> Repo.update!()
+        end
+
+        def update_my_schema_with_assocs(nil, attrs, assocs) do
+          update_my_schema(nil, attrs)
         end
 
         def update_my_schema_with_assocs(id, attrs, assocs) do
@@ -101,10 +183,33 @@ defmodule Crudry.Context do
           |> update_my_schema_with_assocs(attrs, assocs)
         end
 
+        def update_my_schema_with_assocs!(id, attrs, assocs) do
+          id
+          |> get_my_schema!()
+          |> update_my_schema_with_assocs!(attrs, assocs)
+        end
+
+        ## Delete functions
+
         def delete_my_schema(%MySchema{} = my_schema) do
           my_schema
           |> Ecto.Changeset.change()
           |> check_assocs([])
+          |> Repo.delete()
+        end
+
+        def delete_my_schema!(%MySchema{} = my_schema) do
+          my_schema
+          |> Ecto.Changeset.change()
+          |> check_assocs([])
+          |> Repo.delete!()
+        end
+
+        def delete_my_schema(nil) do
+          %MySchema{}
+          |> Ecto.Changeset.change()
+          |> check_assocs([])
+          |> Ecto.Changeset.add_error(:id, "not found", [stale: true])
           |> Repo.delete()
         end
 
@@ -114,28 +219,23 @@ defmodule Crudry.Context do
           |> delete_my_schema()
         end
 
-        # Function to check no_assoc_constraints
+        def delete_my_schema!(id) do
+          id
+          |> get_my_schema!()
+          |> delete_my_schema!()
+        end
+
+        # Function to check no_assoc_constraints, always generated.
         defp check_assocs(changeset, nil), do: changeset
         defp check_assocs(changeset, constraints) do
           Enum.reduce(constraints, changeset, fn i, acc -> Ecto.Changeset.no_assoc_constraint(acc, i) end)
         end
       end
-
-  Now, suppose the changeset for create and update are different,
-  and we want to delete the record only if the association `has_many :assocs` is empty:
-
-      defmodule MyApp.MyContext do
-        alias MyApp.Repo
-        alias MyApp.MySchema
-        require Crudry.Context
-
-        Crudry.Context.generate_functions MySchema,
-          create: :create_changeset,
-          update: :update_changeset,
-          check_constraints_on_delete: [:assocs]
-      end
-
   """
+
+  @all_functions ~w(get list count search filter create update delete)a
+  # Always generate helper functions since they are used in the other generated functions
+  @helper_functions ~w(check_assocs)a
 
   @doc """
   Sets default options for the context.
@@ -143,18 +243,25 @@ defmodule Crudry.Context do
   ## Options
 
     * `:create` - the name of the changeset function used in the `create` function.
-    Default to `:changeset`.
+    Defaults to `:changeset`.
 
     * `:update` - the name of the changeset function used in the `update` function.
-    Default to `:changeset`.
+    Defaults to `:changeset`.
 
     * `:only` - list of functions to be generated. If not empty, functions not
-    specified in this list are not generated. Default to `[]`.
+    specified in this list are not generated. Defaults to `[]`.
 
     * `:except` - list of functions to not be generated. If not empty, only functions not specified
-    in this list will be generated. Default to `[]`.
+    in this list will be generated. Defaults to `[]`.
 
-    The accepted values for `:only` and `:except` are: `[:get, :get!, :list, :search, :filter, :count, :create, :update, :delete]`.
+    * `:stale_error_field` - The field where stale errors will be added in the returning changeset.
+    This is also used when updating or deleting by ID and the record is not found.
+    See [Repo.Update options](https://hexdocs.pm/ecto/Ecto.Repo.html#c:update/2-options) for more information.
+    Defaults to `:id`
+
+    * `:stale_error_message` - The message to add to the configured `:stale_error_field` when stale errors happen. Defaults to `"not found"`.
+
+    The accepted values for `:only` and `:except` are: `#{inspect(@all_functions)}`.
 
   ## Examples
 
@@ -172,11 +279,9 @@ defmodule Crudry.Context do
     Module.put_attribute(__CALLER__.module, :update_changeset, opts[:update])
     Module.put_attribute(__CALLER__.module, :only, opts[:only])
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
+    Module.put_attribute(__CALLER__.module, :stale_error_field, opts[:stale_error_field])
+    Module.put_attribute(__CALLER__.module, :stale_error_message, opts[:stale_error_message])
   end
-
-  @all_functions ~w(get list count search filter create update delete)a
-  # Always generate helper functions since they are used in the other generated functions
-  @helper_functions ~w(check_assocs)a
 
   @doc """
   Generates CRUD functions for the `schema_module`.
@@ -185,7 +290,7 @@ defmodule Crudry.Context do
   There is also one extra option that cannot be set by default:
 
     * `check_constraints_on_delete` - list of associations that must be empty to allow deletion.
-  `Ecto.Changeset.no_assoc_constraint` will be called for each association before deleting. Default to `[]`.
+  `Ecto.Changeset.no_assoc_constraint` will be called for each association before deleting. Defaults to `[]`.
 
   ## Examples
 
@@ -200,24 +305,18 @@ defmodule Crudry.Context do
         Crudry.Context.generate_functions Accounts.User
       end
 
-    Now, all this functionality is available:
+    Now, suppose the changeset for create and update are different, and we want to delete the record only if the association `has_many :assocs` is empty:
 
-      Accounts.get_user(id)
-      Accounts.get_user_with_assocs(id, assocs)
-      Accounts.get_user!(id)
-      Accounts.get_user_with_assocs!(id, assocs)
-      Accounts.list_users()
-      Accounts.list_users(opts)
-      Accounts.count_users(field \\\\ :id)
-      Accounts.search_users(search_term)
-      Accounts.filter_users(filters)
-      Accounts.create_user(attrs)
-      Accounts.update_user(%User{}, attrs)
-      Accounts.update_user(id, attrs)
-      Accounts.update_user_with_assocs(%User{}, attrs, assocs)
-      Accounts.update_user_with_assocs(id, attrs, assocs)
-      Accounts.delete_user(%User{})
-      Accounts.delete_user(id)
+      defmodule MyApp.MyContext do
+        alias MyApp.Repo
+        alias MyApp.MySchema
+        require Crudry.Context
+
+        Crudry.Context.generate_functions MySchema,
+          create: :create_changeset,
+          update: :update_changeset,
+          check_constraints_on_delete: [:assocs]
+      end
   """
   defmacro generate_functions(schema_module, opts \\ []) do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
@@ -235,13 +334,18 @@ defmodule Crudry.Context do
     update_changeset = Module.get_attribute(module, :update_changeset)
     only = Module.get_attribute(module, :only)
     except = Module.get_attribute(module, :except)
+    stale_error_field = Module.get_attribute(module, :stale_error_field)
+    stale_error_message = Module.get_attribute(module, :stale_error_message)
 
-    [
+    opts = [
       create: create_changeset || :changeset,
       update: update_changeset || :changeset,
       only: only || [],
       except: except || [],
-      check_constraints_on_delete: []
+      check_constraints_on_delete: [],
+      stale_error_field: stale_error_field,
+      stale_error_message: stale_error_message || "not found"
     ]
+    Enum.reject(opts, fn {_key, value} -> is_nil(value) end)
   end
 end

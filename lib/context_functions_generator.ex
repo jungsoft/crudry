@@ -127,17 +127,29 @@ defmodule ContextFunctionsGenerator do
   end
 
   def generate_function(:update, name, _pluralized_name, module, opts) do
+    opts = Keyword.merge([stale_error_field: String.to_atom(name)], opts)
+
     quote do
       def unquote(:"update_#{name}")(%module{} = struct, attrs) do
         struct
         |> unquote(module).unquote(opts[:update])(attrs)
-        |> alias!(Repo).update()
+        |> alias!(Repo).update(unquote(opts))
       end
 
       def unquote(:"update_#{name}!")(%module{} = struct, attrs) do
         struct
         |> unquote(module).unquote(opts[:update])(attrs)
-        |> alias!(Repo).update!()
+        |> alias!(Repo).update!(unquote(opts))
+      end
+
+      def unquote(:"update_#{name}")(nil, attrs) do
+        opts = unquote(opts)
+
+        unquote(module)
+        |> struct()
+        |> unquote(module).unquote(opts[:update])(attrs)
+        |> Ecto.Changeset.add_error(opts[:stale_error_field], opts[:stale_error_message], [stale: true])
+        |> alias!(Repo).update(opts)
       end
 
       def unquote(:"update_#{name}")(id, attrs) do
@@ -148,7 +160,7 @@ defmodule ContextFunctionsGenerator do
 
       def unquote(:"update_#{name}!")(id, attrs) do
         id
-        |> unquote(:"get_#{name}")()
+        |> unquote(:"get_#{name}!")()
         |> unquote(:"update_#{name}!")(attrs)
       end
 
@@ -156,14 +168,18 @@ defmodule ContextFunctionsGenerator do
         struct
         |> alias!(Repo).preload(assocs)
         |> unquote(module).unquote(opts[:update])(attrs)
-        |> alias!(Repo).update()
+        |> alias!(Repo).update(unquote(opts))
       end
 
       def unquote(:"update_#{name}_with_assocs!")(%module{} = struct, attrs, assocs) do
         struct
         |> alias!(Repo).preload(assocs)
         |> unquote(module).unquote(opts[:update])(attrs)
-        |> alias!(Repo).update!()
+        |> alias!(Repo).update!(unquote(opts))
+      end
+
+      def unquote(:"update_#{name}_with_assocs")(nil, attrs, _assocs) do
+        unquote(:"update_#{name}")(nil, attrs)
       end
 
       def unquote(:"update_#{name}_with_assocs")(id, attrs, assocs) do
@@ -174,26 +190,39 @@ defmodule ContextFunctionsGenerator do
 
       def unquote(:"update_#{name}_with_assocs!")(id, attrs, assocs) do
         id
-        |> unquote(:"get_#{name}")()
+        |> unquote(:"get_#{name}!")()
         |> unquote(:"update_#{name}_with_assocs!")(attrs, assocs)
       end
     end
   end
 
-  def generate_function(:delete, name, module, _pluralized_name, opts) do
-    quote bind_quoted: [module: module], unquote: true do
+  def generate_function(:delete, name, __pluralized_name, module, opts) do
+    opts = Keyword.merge([stale_error_field: String.to_atom(name)], opts)
+
+    quote do
       def unquote(:"delete_#{name}")(%module{} = struct) do
         struct
         |> Ecto.Changeset.change()
         |> check_assocs(unquote(opts[:check_constraints_on_delete]))
-        |> alias!(Repo).delete()
+        |> alias!(Repo).delete(unquote(opts))
       end
 
       def unquote(:"delete_#{name}!")(%module{} = struct) do
         struct
         |> Ecto.Changeset.change()
         |> check_assocs(unquote(opts[:check_constraints_on_delete]))
-        |> alias!(Repo).delete!()
+        |> alias!(Repo).delete!(unquote(opts))
+      end
+
+      def unquote(:"delete_#{name}")(nil) do
+        opts = unquote(opts)
+
+        unquote(module)
+        |> struct()
+        |> Ecto.Changeset.change()
+        |> check_assocs(unquote(opts[:check_constraints_on_delete]))
+        |> Ecto.Changeset.add_error(opts[:stale_error_field], opts[:stale_error_message], [stale: true])
+        |> alias!(Repo).delete(opts)
       end
 
       def unquote(:"delete_#{name}")(id) do
@@ -204,7 +233,7 @@ defmodule ContextFunctionsGenerator do
 
       def unquote(:"delete_#{name}!")(id) do
         id
-        |> unquote(:"get_#{name}")()
+        |> unquote(:"get_#{name}!")()
         |> unquote(:"delete_#{name}!")()
       end
     end

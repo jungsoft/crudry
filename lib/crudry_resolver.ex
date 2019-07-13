@@ -17,7 +17,7 @@ defmodule Crudry.Resolver do
         Crudry.Resolver.generate_functions MyContext, MySchema
       end
 
-  And the resolver will become
+  And the resolver will have all these functions available:
 
       defmodule MyApp.MyResolver do
         alias MyApp.Repo
@@ -26,12 +26,13 @@ defmodule Crudry.Resolver do
         require Crudry.Resolver
 
         def get_my_schema(%{id: id}, _info) do
-          MyContext.get_my_schema(id)
+          id
+          |> MyContext.get_my_schema()
           |> nil_to_error("my_schema", fn record -> {:ok, record} end)
         end
 
         def list_my_schemas(_args, _info) do
-          {:ok, MyContext.list_my_schemas()}
+          {:ok, MyContext.list_my_schemas([])}
         end
 
         def create_my_schema(%{params: params}, _info) do
@@ -39,43 +40,81 @@ defmodule Crudry.Resolver do
         end
 
         def update_my_schema(%{id: id, params: params}, _info) do
-          MyContext.get_my_schema(id)
-          |> nil_to_error("my_schema", fn record -> MyContext.update_my_schema(record, params) end)
+          MyContext.update_my_schema(id, params)
         end
 
         def delete_my_schema(%{id: id}, _info) do
-          MyContext.get_my_schema(id)
-          |> nil_to_error("my_schema", fn record -> MyContext.delete_my_schema(record) end)
+          MyContext.delete_my_schema(id)
         end
 
         # If `result` is `nil`, return an error. Otherwise, apply `func` to the `result`.
         def nil_to_error(result, name, func) do
           case result do
-            nil -> {:error, "\#{Macro.camelize(name)} not found."}
+            nil -> {:error, "\#{name} not found."}
             %{} = record -> func.(record)
           end
         end
-      end
 
-  Now, suppose the update resolver for our schema should update not only the schema but also some of its associations.
-
-      defmodule MyApp.Resolver do
-        alias MyApp.Repo
-        alias MyApp.MyContext
-        alias MyApp.MySchema
-        require Crudry.Resolver
-
-        Crudry.Resolver.generate_functions MyContext, MySchema, except: [:update]
-
-        def update_my_schema(%{id: id, params: params}, _info) do
-          MyContext.get_my_schema(id)
-          |> nil_to_error("My Schema", fn record -> MyContext.update_my_schema_with_assocs(record, params, [:assoc]) end)
+        def add_info_to_custom_query(custom_query, info) do
+          fn initial_query -> custom_query.(initial_query, info) end
         end
       end
+  """
 
-  By using the `nil_to_error` function, we DRY the nil checking and also ensure the error message is the same as the other auto-generated functions.
+  @all_functions ~w(get list create update delete)a
+  # Always generate helper functions since they are used in the other generated functions
+  @helper_functions ~w(nil_to_error add_info_to_custom_query)a
 
-  It's also possible to define a custom create function, useful when all functions in a resolver change the data in the same way before creating:
+  @doc """
+  Sets default options for the resolver.
+
+  ## Options
+
+    * `:only` - list of functions to be generated. If not empty, functions not
+    specified in this list are not generated. Defaults to `[]`.
+
+    * `:except` - list of functions to not be generated. If not empty, only functions not specified
+    in this list will be generated. Defaults to `[]`.
+
+    * `list_opts` - options for the `list` function. See available options in `Crudry.Query.list/2`. Defaults to `[]`.
+
+    * `create_resolver` - custom `create` resolver function with arity 4. Receives the following arguments: [Context, schema_name, args, info]. Defaults to `nil`.
+
+  Note: in `list_opts`, `custom_query` will receive absinthe's info as the second argument and, therefore, must have arity 2. See example in `generate_functions/3`.
+
+  The accepted values for `:only` and `:except` are: `#{inspect(@all_functions)}`.
+
+  ## Examples
+
+      iex> Crudry.Resolver.default only: [:create, :list]
+      :ok
+
+      iex> Crudry.Resolver.default except: [:get!, :list, :delete]
+      :ok
+
+      iex> Crudry.Resolver.default list_opts: [order_by: :id]
+      :ok
+
+      iex> Crudry.Resolver.default list_opts: [custom_query: &scope_list/2]
+      :ok
+  """
+  defmacro default(opts) do
+    Module.put_attribute(__CALLER__.module, :only, opts[:only])
+    Module.put_attribute(__CALLER__.module, :except, opts[:except])
+    Module.put_attribute(__CALLER__.module, :list_opts, opts[:list_opts])
+    Module.put_attribute(__CALLER__.module, :create_resolver, opts[:create_resolver])
+  end
+
+  @doc """
+  Generates CRUD functions for the `schema_module` resolver.
+
+  Custom options can be given. To see the available options, refer to the documenation of `Crudry.Resolver.default/1`.
+
+  ## Examples
+
+  ### Custom create resolver
+
+    It's possible to define a custom create function, useful when all functions in a resolver change the data in the same way before creating:
 
       defmodule MyApp.Resolver do
         alias MyApp.Repo
@@ -92,85 +131,30 @@ defmodule Crudry.Resolver do
         end
       end
 
-    Now when creating `MySchema` and `OtherSchema`, the custom function will put the user's `company_id` in the params.
-  """
+    Now when creating `MySchema` and `OtherSchema`, the custom function will put the current user's `company_id` in the params.
 
-  @doc """
-  Sets default options for the resolver.
+  ### Custom query
 
-  ## Options
+    It's also possible to use a custom query that has access to absinthe's `info`:
 
-    * `:only` - list of functions to be generated. If not empty, functions not
-    specified in this list are not generated. Default to `[]`.
-
-    * `:except` - list of functions to not be generated. If not empty, only functions not specified
-    in this list will be generated. Default to `[]`.
-
-    * `list_opts` - options for the `list` function. See available options in `Crudry.Query.list/2`. Default to `[]`.
-
-    * `create_resolver` - custom `create` resolver function with arity 4. Receives the following arguments: [Context, schema_name, args, info]. Default to `nil`.
-
-    Note: in list_opts, custom_query will receive absinthe's info as the second argument and, therefore, must have arity 2. See example below.
-
-    The accepted values for `:only` and `:except` are: `[:get, :list, :create, :update, :delete]`.
-
-  ## Examples
-
-      iex> Crudry.Resolver.default only: [:create, :list]
-      :ok
-
-      iex> Crudry.Resolver.default except: [:get!, :list, :delete]
-      :ok
-
-      iex> Crudry.Resolver.default list_opts: [order_by: :id]
-      :ok
-
-      def scope_list(Post, info) do
-        current_user = info.context.current_user
-
-        where(Post, [p], p.user_id == ^current_user.id)
-      end
-
-      def scope_list(initial_query, _info), do: initial_query
-
-      iex> Crudry.Resolver.default list_opts: [custom_query: &scope_list/2]
-      :ok
-  """
-  defmacro default(opts) do
-    Module.put_attribute(__CALLER__.module, :only, opts[:only])
-    Module.put_attribute(__CALLER__.module, :except, opts[:except])
-    Module.put_attribute(__CALLER__.module, :list_opts, opts[:list_opts])
-    Module.put_attribute(__CALLER__.module, :create_resolver, opts[:create_resolver])
-  end
-
-  @all_functions ~w(get list create update delete)a
-  # Always generate helper functions since they are used in the other generated functions
-  @helper_functions ~w(nil_to_error add_info_to_custom_query)a
-
-  @doc """
-  Generates CRUD functions for the `schema_module` resolver.
-
-  Custom options can be given. To see the available options, refer to the documenation of `Crudry.Resolver.default/1`.
-
-  ## Examples
-
-    Suppose we want to implement basic CRUD functionality for a User resolver,
-    assuming there is an Accounts context which already implements CRUD functions for User.
-
-      defmodule MyApp.AccountsResolver do
+      defmodule MyApp.Resolver do
+        alias MyApp.Repo
+        alias MyApp.MyContext
+        alias MyApp.MySchema
         require Crudry.Resolver
 
-        Crudry.Resolver.generate_functions Accounts, Accounts.User
+        def scope_list(MySchema, %{context: %{current_user: current_user}} = _info) do
+          where(MySchema, [p], p.user_id == ^current_user.id)
+        end
+
+        Crudry.Resolver.generate_functions MyContext, MySchema, list_opts: [custom_query: &scope_list/2]
       end
 
-    Now, all this functionality is available:
+    With this, the list function will effectively become:
 
-      AccountsResolver.get_user(%{id: id}, info)
-      AccountsResolver.list_users(_args, info)
-      AccountsResolver.crete_user(%{params: params}, info)
-      AccountsResolver.update_user(%{id: id, params: params}, info)
-      AccountsResolver.delete_user(%{id: id}, info)
-      AccountsResolver.nil_to_error(result, name, func)
+      def list_my_schemas(_args, info) do
+        {:ok, MyContext.list_my_schemas(custom_query: add_info_to_custom_query(scope_list, info))}
+      end
   """
   defmacro generate_functions(context, schema_module, opts \\ []) do
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
