@@ -7,6 +7,7 @@ defmodule Crudry.MixProject do
       version: "1.5.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
+      compilers: [:gettext] ++ Mix.compilers,
       deps: deps(),
       name: "Crudry",
       source_url: "https://github.com/gabrielpra1/crudry",
@@ -53,7 +54,8 @@ defmodule Crudry.MixProject do
       {:ecto, "~> 3.0"},
       {:ecto_sql, "~> 3.0", only: :test},
       {:postgrex, ">= 0.0.0", only: :test},
-      {:absinthe, "~> 1.4.0"}
+      {:absinthe, "~> 1.4.0"},
+      {:gettext, ">= 0.0.0"},
     ]
   end
 end
