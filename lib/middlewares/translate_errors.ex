@@ -1,4 +1,4 @@
-defmodule Crudry.Middlewares.HandleChangesetErrors do
+defmodule Crudry.Middlewares.TranslateErrors do
   @moduledoc """
   Absinthe Middleware to translate changeset errors into human readable messages. It supports nested errors.
 
@@ -6,22 +6,22 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
 
   To handle errors for a field, add it after the resolve, using [`middleware/2`](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-the-middleware-2-macro):
 
-      alias Crudry.Middlewares.HandleChangesetErrors
+      alias Crudry.Middlewares.TranslateErrors
 
       field :create_user, :user do
         arg :params, non_null(:user_params)
 
         resolve &UsersResolver.create_user/2
-        middleware HandleChangesetErrors
+        middleware TranslateErrors
       end
 
   To handle errors for all fields, use [middleware/3](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-object-wide-authentication):
 
-      alias Crudry.Middlewares.HandleChangesetErrors
+      alias Crudry.Middlewares.TranslateErrors
 
       # Only add the middleware to mutations
       def middleware(middleware, _field, %Absinthe.Type.Object{identifier: :mutation}) do
-        middleware ++ [HandleChangesetErrors]
+        middleware ++ [TranslateErrors]
       end
 
       def middleware(middleware, _field, _object) do
@@ -73,49 +73,75 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
 
   @behaviour Absinthe.Middleware
 
+  alias Crudry.Translator
+
   alias Absinthe.Resolution
   alias Ecto.Changeset
 
   def call(%{errors: errors} = resolution, _config) do
-    resolution
-    |> Resolution.put_result({:error, Enum.flat_map(errors, &handle_error/1)})
+    translator = get_translator(resolution)
+    locale = get_locale(resolution, translator)
+
+    Resolution.put_result(resolution, {:error, Enum.flat_map(errors, & handle_error(&1, translator, locale))})
   end
 
-  defp handle_error(%Ecto.Changeset{} = changeset) do
+  defp get_translator(%{context: %{translator: translator}}), do: translator
+  defp get_translator(_res), do: Translator
+
+  defp get_locale(%{context: %{locale: locale}}, _translator), do: locale
+  defp get_locale(_res, translator), do: Gettext.get_locale(translator)
+
+  defp handle_error(%Ecto.Changeset{} = changeset, translator, locale) do
     changeset
-    |> Changeset.traverse_errors(&translate_error/1)
-    |> Enum.map(fn {key, value} -> message_to_string(key, value) end)
+    |> Changeset.traverse_errors(& translate_error(&1, translator, locale))
+    |> Enum.map(fn {key, value} -> message_to_string(key, value, translator, locale) end)
     |> List.flatten()
   end
 
-  defp handle_error(error), do: [error]
+  defp handle_error(error, translator, locale) do
+    [translate_with_domain(translator, locale, :errors_domain, error)]
+  end
+
+  defp translate_with_domain(translator, locale, domain, msgid, bindings \\ %{}) do
+    Gettext.with_locale(locale, fn ->
+      Gettext.dgettext(translator, get_domain(translator, domain), msgid, bindings)
+    end)
+  end
 
   # The error message is a tuple like this:
   # {"should be at least %{count} characters", [count: 3, validation: :length, min: 3]}
   # So here we translate it to become like this:
   # "should be at least 3 characters"
-  defp translate_error({err, opts}) do
-    Enum.reduce(opts, err, fn {key, value}, acc ->
-      String.replace(acc, "%{#{key}}", to_string(value))
-    end)
+  defp translate_error({error, opts}, translator, locale) do
+    translate_with_domain(translator, locale, :errors_domain, error, opts)
+  end
+
+  defp get_domain(translator, domain) do
+    try do
+      apply(translator, domain, [])
+    rescue
+      _error -> apply(Translator, domain, [])
+    end
   end
 
   # Simple case (e.g. key: `label`, value: `"does not exist"`)
   # Just concatenate strings
-  defp message_to_string(key, [value]) when is_binary(value) do
-    "#{key} #{value}"
+  defp message_to_string(key, [value], translator, locale) when is_binary(value) do
+    translated_field = translate_with_domain(translator, locale, :schema_fields_domain, to_string(key))
+
+    "#{translated_field} #{value}"
   end
 
   # Nested case, like this:
   # %{project_workflow_steps: [%{map: %{definition: ["cant be blank"]}}, %{}]}
   # key: `project_workflow_steps`, value: `[%{map: %{definition: ["cant be blank"]}}, %{}]`
   # Remove empty maps and recursively convert nested messages to string
-  defp message_to_string(key, value) when is_list(value) do
+  defp message_to_string(key, value, translator, locale) when is_list(value) do
     value
     |> Enum.reject(fn x -> x == %{} end)
     |> Enum.map(fn x ->
       Enum.map(x, fn {inner_key, inner_value} ->
-        message_to_string(key, Map.new([{inner_key, inner_value}]))
+        message_to_string(key, Map.new([{inner_key, inner_value}]), translator, locale)
       end)
     end)
   end
@@ -123,11 +149,11 @@ defmodule Crudry.Middlewares.HandleChangesetErrors do
   # When there are no more nested errors, the input is
   # key: `map`, value: `%{definition: ["cant be blank"]}`
   # Only add `key: ` to the start of the string if this is the last level of nesting.
-  defp message_to_string(key, %{} = value) do
+  defp message_to_string(key, %{} = value, translator, locale) do
     Enum.map(value, fn {inner_key, inner_value} ->
       case get_value(inner_value) do
-        %{} -> message_to_string(inner_key, inner_value)
-        _ -> "#{key}: #{message_to_string(inner_key, inner_value)}"
+        %{} -> message_to_string(inner_key, inner_value, translator, locale)
+        _ -> "#{key}: #{message_to_string(inner_key, inner_value, translator, locale)}"
       end
     end)
   end

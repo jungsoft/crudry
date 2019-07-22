@@ -53,7 +53,7 @@ end
 To see the functions that are generated and custom options, refer to the [Crudry.Resolver docs](https://hexdocs.pm/crudry/Crudry.Resolver.html#module-usage).
 
 
-### Handle Changeset Errors middleware
+### Translate Errors middleware
 
 The `create`, `update` and `delete` functions in the resolver all return `Ecto.Changeset` as errors, so it's useful to translate them into human readable messages.
 
@@ -64,26 +64,21 @@ field :create_user, :user do
   arg :params, non_null(:user_params)
 
   resolve &UsersResolver.create_user/2
-  middleware Crudry.Middlewares.HandleChangesetErrors
+  middleware Crudry.Middlewares.TranslateErrors
 end
 ```
 
-Or define it for all mutations, using [middleware/3](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-object-wide-authentication):
+Or define it for all queries and mutations, using [middleware/3](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-object-wide-authentication):
 
 ```elixir
-alias Crudry.Middlewares.HandleChangesetErrors
-
-# Only add the middleware to mutations
-def middleware(middleware, _field, %Absinthe.Type.Object{identifier: :mutation}) do
-  middleware ++ [HandleChangesetErrors]
-end
+alias Crudry.Middlewares.TranslateErrors
 
 def middleware(middleware, _field, _object) do
-  middleware
+  middleware ++ [TranslateErrors]
 end
 ```
 
-Refer to the [HandleChangesetErrors docs](https://hexdocs.pm/crudry/Crudry.Middlewares.HandleChangesetErrors.html) for more information.
+Refer to the [TranslateErrors docs](https://hexdocs.pm/crudry/Crudry.Middlewares.TranslateErrors.html) for more information.
 
 ## Related Projects
 
