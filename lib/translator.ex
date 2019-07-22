@@ -19,10 +19,22 @@ defmodule Crudry.Translator do
       dgettext("errors", "Here is the error message to translate")
 
   See the [Gettext Docs](https://hexdocs.pm/gettext) for detailed usage.
+
+  ## Usage with `Crudry.Middlewares.TranslateErrors`
+
+  This module defines `errors_domain/0` and `schema_fields_domain/0` functions, which return the domains that will be used to translate changeset errors and ecto schema keys.
+
+  You can also define and use your own Translator module in `Crudry.Middlewares.TranslateErrors` by adding it to your Absinthe's schema `context/1` function:
+
+    def context(context) do
+      Map.put(context, :translator, MyApp.Translator)
+    end
   """
   use Gettext, otp_app: :crudry
 
+  @spec errors_domain :: String.t()
   def errors_domain, do: "errors"
 
+  @spec schema_fields_domain :: String.t()
   def schema_fields_domain, do: "schema_fields"
 end

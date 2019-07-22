@@ -1,10 +1,18 @@
 defmodule Crudry.Middlewares.TranslateErrors do
   @moduledoc """
-  Absinthe Middleware to translate changeset errors into human readable messages. It supports nested errors.
+  Absinthe Middleware to translate errors and changeset errors into human readable messages using [Gettext](https://github.com/elixir-lang/gettext).
 
   ## Usage
 
-  To handle errors for a field, add it after the resolve, using [`middleware/2`](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-the-middleware-2-macro):
+  `Cudry.Translator` is used by default to translate error messages to the default locale `en`. You can also use your own Gettext module by adding it and the desired `locale` to to your Absinthe's schema `context/1` function:
+
+    def context(context) do
+      context
+      |> Map.put(:translator, MyApp.Translator)
+      |> Map.put(:locale, "pt_BR")
+    end
+
+  Then, to handle errors for a field, add it after the resolve, using [`middleware/2`](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-the-middleware-2-macro):
 
       alias Crudry.Middlewares.TranslateErrors
 
@@ -19,13 +27,8 @@ defmodule Crudry.Middlewares.TranslateErrors do
 
       alias Crudry.Middlewares.TranslateErrors
 
-      # Only add the middleware to mutations
-      def middleware(middleware, _field, %Absinthe.Type.Object{identifier: :mutation}) do
-        middleware ++ [TranslateErrors]
-      end
-
       def middleware(middleware, _field, _object) do
-        middleware
+        middleware ++ [TranslateErrors]
       end
 
   ## Examples
