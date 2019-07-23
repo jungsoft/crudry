@@ -140,25 +140,6 @@ defmodule Crudry.Context do
           |> Repo.update!()
         end
 
-        def update_my_schema(nil, attrs) do
-          %MySchema{}
-          |> MySchema.changeset(attrs)
-          |> Ecto.Changeset.add_error(:id, "not found", [stale: true])
-          |> Repo.update()
-        end
-
-        def update_my_schema(id, attrs) do
-          id
-          |> get_my_schema()
-          |> update_my_schema(attrs)
-        end
-
-        def update_my_schema!(id, attrs) do
-          id
-          |> get_my_schema!()
-          |> update_my_schema!(attrs)
-        end
-
         def update_my_schema_with_assocs(%MySchema{} = my_schema, attrs, assocs) do
           my_schema
           |> Repo.preload(assocs)
@@ -171,22 +152,6 @@ defmodule Crudry.Context do
           |> Repo.preload(assocs)
           |> MySchema.changeset(attrs)
           |> Repo.update!()
-        end
-
-        def update_my_schema_with_assocs(nil, attrs, assocs) do
-          update_my_schema(nil, attrs)
-        end
-
-        def update_my_schema_with_assocs(id, attrs, assocs) do
-          id
-          |> get_my_schema()
-          |> update_my_schema_with_assocs(attrs, assocs)
-        end
-
-        def update_my_schema_with_assocs!(id, attrs, assocs) do
-          id
-          |> get_my_schema!()
-          |> update_my_schema_with_assocs!(attrs, assocs)
         end
 
         ## Delete functions
@@ -203,26 +168,6 @@ defmodule Crudry.Context do
           |> Ecto.Changeset.change()
           |> check_assocs([])
           |> Repo.delete!()
-        end
-
-        def delete_my_schema(nil) do
-          %MySchema{}
-          |> Ecto.Changeset.change()
-          |> check_assocs([])
-          |> Ecto.Changeset.add_error(:id, "not found", [stale: true])
-          |> Repo.delete()
-        end
-
-        def delete_my_schema(id) do
-          id
-          |> get_my_schema()
-          |> delete_my_schema()
-        end
-
-        def delete_my_schema!(id) do
-          id
-          |> get_my_schema!()
-          |> delete_my_schema!()
         end
 
         # Function to check no_assoc_constraints, always generated.
@@ -254,13 +199,6 @@ defmodule Crudry.Context do
     * `:except` - list of functions to not be generated. If not empty, only functions not specified
     in this list will be generated. Defaults to `[]`.
 
-    * `:stale_error_field` - The field where stale errors will be added in the returning changeset.
-    This is also used when updating or deleting by ID and the record is not found.
-    See [Repo.Update options](https://hexdocs.pm/ecto/Ecto.Repo.html#c:update/2-options) for more information.
-    Defaults to `:id`
-
-    * `:stale_error_message` - The message to add to the configured `:stale_error_field` when stale errors happen. Defaults to `"not found"`.
-
     The accepted values for `:only` and `:except` are: `#{inspect(@all_functions)}`.
 
   ## Examples
@@ -279,8 +217,6 @@ defmodule Crudry.Context do
     Module.put_attribute(__CALLER__.module, :update_changeset, opts[:update])
     Module.put_attribute(__CALLER__.module, :only, opts[:only])
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
-    Module.put_attribute(__CALLER__.module, :stale_error_field, opts[:stale_error_field])
-    Module.put_attribute(__CALLER__.module, :stale_error_message, opts[:stale_error_message])
   end
 
   @doc """
@@ -334,18 +270,13 @@ defmodule Crudry.Context do
     update_changeset = Module.get_attribute(module, :update_changeset)
     only = Module.get_attribute(module, :only)
     except = Module.get_attribute(module, :except)
-    stale_error_field = Module.get_attribute(module, :stale_error_field)
-    stale_error_message = Module.get_attribute(module, :stale_error_message)
 
-    opts = [
+    [
       create: create_changeset || :changeset,
       update: update_changeset || :changeset,
       only: only || [],
       except: except || [],
       check_constraints_on_delete: [],
-      stale_error_field: stale_error_field,
-      stale_error_message: stale_error_message || "not found"
     ]
-    Enum.reject(opts, fn {_key, value} -> is_nil(value) end)
   end
 end
