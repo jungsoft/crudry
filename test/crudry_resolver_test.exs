@@ -108,7 +108,9 @@ defmodule CrudryResolverTest do
 
       assert {:ok, %User{username: @username} = user} = ResolverExcept.create_user(@userparams, @info)
       assert {:ok, %User{username: "new"}} = ResolverExcept.update_user(%{id: user.id, params: %{username: "new"}}, @info)
-      assert length(ResolverExcept.__info__(:functions)) == 5
+
+      refute Enum.member?(ResolverExcept.__info__(:functions), {:list, 2})
+      refute Enum.member?(ResolverExcept.__info__(:functions), {:delete, 2})
     end
 
     test "using default only" do
@@ -119,7 +121,9 @@ defmodule CrudryResolverTest do
 
       assert {:ok, %User{username: @username} = user} = ResolverOnlyDefault.create_user(@userparams, @info)
       assert ResolverOnlyDefault.list_users(%{}, @info) == {:ok, [user]}
-      assert length(ResolverOnlyDefault.__info__(:functions)) == 4
+
+      refute Enum.member?(ResolverOnlyDefault.__info__(:functions), {:update, 2})
+      refute Enum.member?(ResolverOnlyDefault.__info__(:functions), {:delete, 2})
     end
 
     test "using default except" do
@@ -130,7 +134,9 @@ defmodule CrudryResolverTest do
 
       assert {:ok, %User{username: @username} = user} = ResolverExceptDefault.create_user(@userparams, @info)
       assert {:ok, %User{username: "new"}} = ResolverExceptDefault.update_user(%{id: user.id, params: %{username: "new"}}, @info)
-      assert length(ResolverExceptDefault.__info__(:functions)) == 5
+
+      refute Enum.member?(ResolverExceptDefault.__info__(:functions), {:list, 2})
+      refute Enum.member?(ResolverExceptDefault.__info__(:functions), {:delete, 2})
     end
   end
 
@@ -328,5 +334,22 @@ defmodule CrudryResolverTest do
 
     assert new_user.company_id == company.id
     assert new_user.username == params.username
+  end
+
+  test "override not found message" do
+    defmodule UserResolverNilToError do
+      Crudry.Resolver.generate_functions Users, User, not_found_message: "inexistent"
+    end
+
+    {:error, %{message: "inexistent", schema: "user"}} = UserResolverNilToError.update_user(%{id: -1, params: %{name: "name"}}, @info)
+  end
+
+  test "define default not found message" do
+    defmodule UserResolverDefaultNilToError do
+      Crudry.Resolver.default not_found_message: "inexistent"
+      Crudry.Resolver.generate_functions Users, User
+    end
+
+    {:error, %{message: "inexistent", schema: "user"}} = UserResolverDefaultNilToError.update_user(%{id: -1, params: %{name: "name"}}, @info)
   end
 end

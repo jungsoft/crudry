@@ -168,6 +168,12 @@ defmodule TranslateErrorsTest do
     assert TranslateErrors.call(resolution, :_)[:errors] == ["usuário não encontrado"]
   end
 
+  test "do not try to translate unknown maps" do
+    resolution = build_resolution(%{message: "random message"})
+
+    assert TranslateErrors.call(resolution, :_)[:errors] == [[message: "random message"]]
+  end
+
   defp build_resolution(errors, context \\ %{})
 
   defp build_resolution(errors, context) when is_list(errors) do

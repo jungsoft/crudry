@@ -64,11 +64,11 @@ defmodule ResolverFunctionsGenerator do
     end
   end
 
-  def generate_function(:nil_to_error, _name, _pluralized_name, _context, _opts) do
+  def generate_function(:nil_to_error, _name, _pluralized_name, _context, opts) do
     quote do
       def unquote(:nil_to_error)(result, name, func) do
         case result do
-          nil -> {:error, %{message: "not found", schema: name}}
+          nil -> {:error, %{message: unquote(opts[:not_found_message]), schema: name}}
           %{} = record -> func.(record)
         end
       end
