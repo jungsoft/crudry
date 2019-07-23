@@ -55,6 +55,8 @@ To see the functions that are generated and custom options, refer to the [Crudry
 
 ### Translate Errors middleware
 
+Absinthe Middleware to translate errors and changeset errors into human readable messages using [Gettext](https://github.com/elixir-lang/gettext).
+
 The `create`, `update` and `delete` functions in the resolver all return `Ecto.Changeset` as errors, so it's useful to translate them into human readable messages.
 
 Crudry provides an `Absinthe.Middleware` to help with that, handling nested changeset errors. Just add it as a middleware to your mutations:
@@ -75,6 +77,22 @@ alias Crudry.Middlewares.TranslateErrors
 
 def middleware(middleware, _field, _object) do
   middleware ++ [TranslateErrors]
+end
+```
+
+`Cudry.Translator` is used by default to translate error messages to the default locale `en`. You can also use your own Gettext module by adding it to your Absinthe's schema `context/1` function:
+
+```elixir
+def context(context) do
+  Map.put(context, :translator, MyApp.Translator)
+end
+```
+
+Or just override the default locale in your [Context Plug](https://hexdocs.pm/absinthe/context-and-authentication.html#context-and-plugs):
+
+```elixir
+def call(conn, _) do
+  Absinthe.Plug.put_options(conn, context: %{locale: "pt_BR"})
 end
 ```
 
