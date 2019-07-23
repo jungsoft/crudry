@@ -22,7 +22,7 @@ defmodule Crudry.Translator do
 
   ## Usage with `Crudry.Middlewares.TranslateErrors`
 
-  This module defines `errors_domain/0` and `schema_fields_domain/0` functions, which return the domains that will be used to translate changeset errors and ecto schema keys.
+  This module defines `errors_domain/0` and `schemas_domain/0` functions, which return the domains that will be used to translate changeset errors and ecto schema keys.
 
   You can also define and use your own Translator module in `Crudry.Middlewares.TranslateErrors` by adding it to your Absinthe's schema `context/1` function:
 
@@ -35,6 +35,6 @@ defmodule Crudry.Translator do
   @spec errors_domain :: String.t()
   def errors_domain, do: "errors"
 
-  @spec schema_fields_domain :: String.t()
-  def schema_fields_domain, do: "schema_fields"
+  @spec schemas_domain :: String.t()
+  def schemas_domain, do: "schemas"
 end

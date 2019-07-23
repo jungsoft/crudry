@@ -68,7 +68,7 @@ defmodule ResolverFunctionsGenerator do
     quote do
       def unquote(:nil_to_error)(result, name, func) do
         case result do
-          nil -> {:error, [{String.to_existing_atom(name), "not found"}]}
+          nil -> {:error, %{message: "not found", schema: name}}
           %{} = record -> func.(record)
         end
       end

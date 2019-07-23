@@ -3,7 +3,6 @@ defmodule CrudryResolverTest do
   doctest Crudry.Resolver
 
   alias Crudry.{Post, Repo, User}
-  alias Ecto.Changeset
   import Ecto.Query
 
   defmodule Users do
@@ -69,7 +68,7 @@ defmodule CrudryResolverTest do
 
     test "get/2", %{user: user} do
       assert Resolver.get_user(%{id: user.id}, @info) == {:ok, user}
-      assert Resolver.get_user(%{id: -1}, @info) == {:error, "User not found"}
+      assert Resolver.get_user(%{id: -1}, @info) == {:error, %{message: "not found", schema: "user"}}
     end
 
     test "create/2" do
@@ -82,14 +81,12 @@ defmodule CrudryResolverTest do
 
     test "update/2", %{user: user} do
       assert {:ok, %User{username: "new"}} = Resolver.update_user(%{id: user.id, params: %{username: "new"}}, @info)
-      assert {:error, %Changeset{errors: errors}} = Resolver.update_user(%{id: -1, params: %{username: "new"}}, @info)
-      assert errors == [user: {"not found", [stale: true]}]
+      assert {:error, %{message: "not found", schema: "user"}} = Resolver.update_user(%{id: -1, params: %{username: "new"}}, @info)
     end
 
     test "delete/2", %{user: %{id: id}} do
       assert  {:ok, %User{id: id}} = Resolver.delete_user(%{id: id}, @info)
-      assert {:error, %Changeset{errors: errors}} = Resolver.delete_user(%{id: id}, @info)
-      assert errors == [user: {"not found", [stale: true]}]
+      assert {:error, %{message: "not found", schema: "user"}} = Resolver.delete_user(%{id: id}, @info)
     end
   end
 
@@ -206,7 +203,7 @@ defmodule CrudryResolverTest do
 
     {:ok, %{id: id}} = Users.create_user(%{username: @username})
     assert {:ok, %User{username: @username}} = ResolverExceptUpdate.update_user(%{id: id, params: @userparams}, @info)
-    assert ResolverExceptUpdate.update_user(%{id: -1, params: @userparams}, @info) == {:error, "user not found"}
+    assert ResolverExceptUpdate.update_user(%{id: -1, params: @userparams}, @info) == {:error, %{message: "not found", schema: "user"}}
   end
 
   test "Camelized name in error message" do
@@ -214,7 +211,7 @@ defmodule CrudryResolverTest do
       Crudry.Resolver.generate_functions(CamelizedContext, Crudry.CamelizedSchemaName)
     end
 
-    assert CamelizedResolver.get_camelized_schema_name(%{id: 0}, @info) == {:error, "CamelizedSchemaName not found"}
+    assert CamelizedResolver.get_camelized_schema_name(%{id: 0}, @info) == {:error, %{message: "not found", schema: "camelized_schema_name"}}
   end
 
   test "Pluralize using schema source" do
