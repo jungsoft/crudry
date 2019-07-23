@@ -84,7 +84,7 @@ end
 
 ```elixir
 def context(context) do
-  Map.put(context, :translator, MyApp.Translator)
+  Map.put(context, :translator, MyAppWeb.Gettext)
 end
 ```
 

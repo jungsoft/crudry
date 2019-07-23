@@ -7,10 +7,6 @@ defmodule TranslateErrorsTest do
 
   defmodule PortugueseTranslator do
     use Gettext, otp_app: :crudry, default_locale: "pt_BR"
-
-    def errors_domain, do: "errors"
-
-    def schema_fields_domain, do: "schema_fields"
   end
 
   test "translate errors that aren't changeset to portuguese" do
