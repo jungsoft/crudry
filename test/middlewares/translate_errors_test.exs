@@ -5,7 +5,7 @@ defmodule TranslateErrorsTest do
   alias Crudry.Middlewares.TranslateErrors
   alias Crudry.{Like, Post, User}
 
-  defmodule PortugeuseTranslator do
+  defmodule PortugueseTranslator do
     use Gettext, otp_app: :crudry, default_locale: "pt_BR"
 
     def errors_domain, do: "errors"
@@ -21,7 +21,7 @@ defmodule TranslateErrorsTest do
 
   test "translate can't be blank changeset error to portuguese" do
     changeset = User.changeset(%User{}, %{})
-    resolution = build_resolution(changeset, %{translator: PortugeuseTranslator})
+    resolution = build_resolution(changeset, %{translator: PortugueseTranslator})
 
     assert TranslateErrors.call(resolution, :_)[:errors] == ["nome de usuário não pode estar vazio"]
   end
