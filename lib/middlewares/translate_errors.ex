@@ -1,6 +1,6 @@
 defmodule Crudry.Middlewares.TranslateErrors do
   @moduledoc """
-  Absinthe Middleware to translate errors and changeset errors into human readable messages. It support nested changeset errors and internationalization, using using [Gettext](https://github.com/elixir-lang/gettext).
+  Absinthe Middleware to translate errors and changeset errors into human readable messages. It support nested changeset errors and internationalization, using [Gettext](https://github.com/elixir-lang/gettext).
 
   ## Usage
 
@@ -107,16 +107,21 @@ defmodule Crudry.Middlewares.TranslateErrors do
 
   defp handle_error(%{message: message, schema: schema}, translator, locale) do
     translated_message = translate_with_domain(translator, locale, :errors_domain, message)
-    [message_to_string(schema, [translated_message], translator, locale)]
+
+    schema
+    |> message_to_string([translated_message], translator, locale)
+    |> List.wrap()
   end
 
   defp handle_error(error, translator, locale) when is_binary(error) do
-    [translate_with_domain(translator, locale, :errors_domain, error)]
+    translator
+    |> translate_with_domain(locale, :errors_domain, error)
+    |> List.wrap()
   end
 
   # If it's a map, a number or a keyword list, we don't try to translate
   defp handle_error(error, _translator, _locale) do
-    error
+    List.wrap(error)
   end
 
   defp translate_with_domain(translator, locale, domain, msgid, bindings \\ %{}) do

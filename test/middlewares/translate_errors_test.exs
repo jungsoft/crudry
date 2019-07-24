@@ -171,7 +171,13 @@ defmodule TranslateErrorsTest do
   test "do not try to translate unknown maps" do
     resolution = build_resolution(%{message: "random message"})
 
-    assert TranslateErrors.call(resolution, :_)[:errors] == [[message: "random message"]]
+    assert TranslateErrors.call(resolution, :_)[:errors] == [%{message: "random message"}]
+  end
+
+  test "do not try to translate numbers" do
+    resolution = build_resolution(2)
+
+    assert TranslateErrors.call(resolution, :_)[:errors] == [2]
   end
 
   defp build_resolution(errors, context \\ %{})
