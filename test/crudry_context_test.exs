@@ -4,7 +4,6 @@ defmodule CrudryContextTest do
 
   alias Crudry.Repo
   alias Crudry.{Post, User}
-  alias Ecto.Changeset
 
   @user %{username: "Chuck Norris"}
   @user2 %{username: "Will Smith"}
@@ -119,82 +118,30 @@ defmodule CrudryContextTest do
 
     test "update/2 with correct arguments", %{user1: user1} do
       assert {:ok, %User{username: "new"}} = UserContext.update_user(user1, %{username: "new"})
-      assert {:ok, %User{username: "brand new"}} = UserContext.update_user(user1.id, %{username: "brand new"})
-    end
-
-    test "update/2 when record does not exist", %{user1: user1} do
-      user_error = Map.put(user1, :id, -1)
-      assert {:error, %Changeset{errors: errors}} = UserContext.update_user(user_error, %{username: "new"})
-      assert errors == [user: {"not found", [stale: true]}]
-
-      assert {:error, %Changeset{errors: errors}} = UserContext.update_user(-1, %{username: "new"})
-      assert errors == [user: {"not found", [stale: true]}]
     end
 
     test "update!/2 with correct arguments", %{user1: user1} do
       assert %User{username: "new"} = UserContext.update_user!(user1, %{username: "new"})
-      assert %User{username: "brand new"} = UserContext.update_user!(user1.id, %{username: "brand new"})
     end
 
-    test "update!/2 when record does not exist", %{user1: user1} do
-      assert_raise Ecto.InvalidChangesetError, fn ->
-        user_error = Map.put(user1, :id, -1)
-        UserContext.update_user!(user_error, %{username: "new"})
-      end
-
-      assert_raise Ecto.NoResultsError, fn ->
-        UserContext.update_user!(-1, %{username: "new"})
-      end
-    end
-
-    test "update_with_assocs/3 with correct arguments", %{user2: user2, user3: user3} do
+    test "update_with_assocs/3 with correct arguments", %{user2: user2} do
       assert {:ok, %User{username: "new", posts: [%Post{title: "post"}]}} =
         UserContext.update_user_with_assocs(user2, %{username: "new", posts: [%{title: "post"}]}, :posts)
-
-      assert {:ok, %User{username: "new", posts: [%Post{title: "post"}]}} =
-        UserContext.update_user_with_assocs(user3.id, %{username: "new", posts: [%{title: "post"}]}, :posts)
     end
 
-    test "update_with_assocs/3 when record does not exist", %{user2: user2} do
-      user_error = Map.put(user2, :id, -1)
-      assert {:error, %Changeset{errors: errors}} = UserContext.update_user_with_assocs(user_error, %{username: "new", posts: [%{title: "post"}]}, :posts)
-      assert errors == [user: {"not found", [stale: true]}]
-
-      assert {:error, %Changeset{errors: errors}} = UserContext.update_user_with_assocs(-1, %{username: "new", posts: [%{title: "post"}]}, :posts)
-      assert errors == [user: {"not found", [stale: true]}]
-    end
-
-    test "update_with_assocs!/3", %{user2: user2, user3: user3} do
+    test "update_with_assocs!/3", %{user2: user2} do
       assert %User{username: "new", posts: [%Post{title: "post"}]} =
         UserContext.update_user_with_assocs!(user2, %{username: "new", posts: [%{title: "post"}]}, :posts)
-
-      assert %User{username: "new", posts: [%Post{title: "post"}]} =
-        UserContext.update_user_with_assocs!(user3.id, %{username: "new", posts: [%{title: "post"}]}, :posts)
     end
 
-    test "delete/1 with correct arguments", %{user2: user2, user3: user3} do
+    test "delete/1 with correct arguments", %{user2: user2} do
       assert {:ok, user2} = UserContext.delete_user(user2)
-      assert {:ok, user3} = UserContext.delete_user(user3.id)
-
       assert UserContext.get_user(user2.id) == nil
-      assert UserContext.get_user(user3.id) == nil
     end
 
-    test "delete/1 when record does not exist", %{user2: user2} do
-      user_error = Map.put(user2, :id, -1)
-      assert {:error, %Changeset{errors: errors}} = UserContext.delete_user(user_error)
-      assert errors == [user: {"not found", [stale: true]}]
-
-      assert {:error, %Changeset{errors: errors}} = UserContext.delete_user(-1)
-      assert errors == [user: {"not found", [stale: true]}]
-    end
-
-    test "delete!/1", %{user2: user2, user3: user3} do
+    test "delete!/1", %{user2: user2} do
       assert user2 = UserContext.delete_user!(user2)
-      assert user3 = UserContext.delete_user!(user3.id)
-
       assert UserContext.get_user(user2.id) == nil
-      assert UserContext.get_user(user3.id) == nil
     end
   end
 
@@ -234,9 +181,9 @@ defmodule CrudryContextTest do
       assert {:error, %Ecto.Changeset{}} = ContextDeleteList.delete_user(user)
 
       # Delete successfully after deleting children
-      assert {:ok, %{}} = ContextDeleteList.delete_like(like.id)
-      assert {:ok, %{}} = ContextDeleteList.delete_post(post.id)
-      assert {:ok, %{}} = ContextDeleteList.delete_user(user.id)
+      assert {:ok, %{}} = ContextDeleteList.delete_like(like)
+      assert {:ok, %{}} = ContextDeleteList.delete_post(post)
+      assert {:ok, %{}} = ContextDeleteList.delete_user(user)
     end
   end
 
@@ -254,8 +201,8 @@ defmodule CrudryContextTest do
         Crudry.Context.generate_functions(Crudry.User, update: :update_changeset)
       end
 
-      assert {:ok, %User{id: id}} = ContextUpdate.create_user(@user)
-      assert {:ok, %User{username: "update_changeset"}} = ContextUpdate.update_user(id, @user)
+      assert {:ok, %User{} = user} = ContextUpdate.create_user(@user)
+      assert {:ok, %User{username: "update_changeset"}} = ContextUpdate.update_user(user, @user)
     end
 
     test "allow defining of both changeset functions" do
@@ -268,8 +215,8 @@ defmodule CrudryContextTest do
         )
       end
 
-      assert {:ok, %User{id: id, username: "create_changeset"}} = ContextBoth.create_user(@user)
-      assert {:ok, %User{username: "update_changeset"}} = ContextBoth.update_user(id, @user)
+      assert {:ok, %User{username: "create_changeset"} = user} = ContextBoth.create_user(@user)
+      assert {:ok, %User{username: "update_changeset"}} = ContextBoth.update_user(user, @user)
     end
 
     test "allow defining default changeset functions for context" do
@@ -278,8 +225,8 @@ defmodule CrudryContextTest do
         Crudry.Context.generate_functions(Crudry.User)
       end
 
-      assert {:ok, %User{id: id, username: "create_changeset"}} = ContextDefault.create_user(@user)
-      assert {:ok, %User{username: "update_changeset"}} = ContextDefault.update_user(id, @user)
+      assert {:ok, %User{username: "create_changeset"} = user} = ContextDefault.create_user(@user)
+      assert {:ok, %User{username: "update_changeset"}} = ContextDefault.update_user(user, @user)
     end
   end
 
@@ -350,27 +297,6 @@ defmodule CrudryContextTest do
 
       assert {:ok, %Crudry.Category{content: "x"} = record} = ContextPluralize.create_category(%{content: "x"})
       assert ContextPluralize.list_categories_schema_source() == [record]
-    end
-  end
-
-  describe "Define stale error configuration" do
-    test "using default" do
-      defmodule DefaultStaleError do
-        Crudry.Context.default(stale_error_field: :field, stale_error_message: "inexistent")
-        Crudry.Context.generate_functions(Crudry.User)
-      end
-
-      assert {:error, %Changeset{errors: errors}} = DefaultStaleError.update_user(-1, %{username: "new"})
-      assert errors == [field: {"inexistent", [stale: true]}]
-    end
-
-    test "for a schema" do
-      defmodule StaleError do
-        Crudry.Context.generate_functions(Crudry.User, stale_error_field: :field, stale_error_message: "inexistent")
-      end
-
-      assert {:error, %Changeset{errors: errors}} = StaleError.update_user(-1, %{username: "new"})
-      assert errors == [field: {"inexistent", [stale: true]}]
     end
   end
 end

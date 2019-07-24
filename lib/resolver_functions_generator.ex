@@ -5,7 +5,7 @@ defmodule ResolverFunctionsGenerator do
     quote do
       def unquote(:"get_#{name}")(%{id: id}, _info) do
         apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id])
-        |> nil_to_error(Macro.camelize(unquote(name)), fn record -> {:ok, record} end)
+        |> nil_to_error(unquote(name), fn record -> {:ok, record} end)
       end
     end
   end
@@ -41,7 +41,12 @@ defmodule ResolverFunctionsGenerator do
   def generate_function(:update, name, _pluralized_name, context, _opts) do
     quote do
       def unquote(:"update_#{name}")(%{id: id, params: params}, _info) do
-        apply(unquote(context), String.to_existing_atom("update_#{unquote(name)}"), [id, params])
+        unquote(context)
+        |> apply(String.to_existing_atom("get_#{unquote(name)}"), [id])
+        |> nil_to_error(unquote(name), fn record ->
+          unquote(context)
+          |> apply(String.to_existing_atom("update_#{unquote(name)}"), [record, params])
+        end)
       end
     end
   end
@@ -49,16 +54,21 @@ defmodule ResolverFunctionsGenerator do
   def generate_function(:delete, name, _pluralized_name, context, _opts) do
     quote do
       def unquote(:"delete_#{name}")(%{id: id}, _info) do
-        apply(unquote(context), String.to_existing_atom("delete_#{unquote(name)}"), [id])
+        unquote(context)
+        |> apply(String.to_existing_atom("get_#{unquote(name)}"), [id])
+        |> nil_to_error(unquote(name), fn record ->
+          unquote(context)
+          |> apply(String.to_existing_atom("delete_#{unquote(name)}"), [record])
+        end)
       end
     end
   end
 
-  def generate_function(:nil_to_error, _name, _pluralized_name, _context, _opts) do
+  def generate_function(:nil_to_error, _name, _pluralized_name, _context, opts) do
     quote do
       def unquote(:nil_to_error)(result, name, func) do
         case result do
-          nil -> {:error, "#{name} not found"}
+          nil -> {:error, %{message: unquote(opts[:not_found_message]), schema: name}}
           %{} = record -> func.(record)
         end
       end

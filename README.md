@@ -52,10 +52,9 @@ end
 
 To see the functions that are generated and custom options, refer to the [Crudry.Resolver docs](https://hexdocs.pm/crudry/Crudry.Resolver.html#module-usage).
 
-
 ### Translate Errors middleware
 
-Absinthe Middleware to translate errors and changeset errors into human readable messages using [Gettext](https://github.com/elixir-lang/gettext).
+Absinthe Middleware to translate errors and changeset errors into human readable messages. It support nested changeset errors and internationalization, using [Gettext](https://github.com/elixir-lang/gettext).
 
 The `create`, `update` and `delete` functions in the resolver all return `Ecto.Changeset` as errors, so it's useful to translate them into human readable messages.
 

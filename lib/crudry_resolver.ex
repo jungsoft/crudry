@@ -80,6 +80,8 @@ defmodule Crudry.Resolver do
 
     * `create_resolver` - custom `create` resolver function with arity 4. Receives the following arguments: [Context, schema_name, args, info]. Defaults to `nil`.
 
+    * `not_found_message` - custom message for the `nil_to_error` function. Defaults to `"not found"`.
+
   Note: in `list_opts`, `custom_query` will receive absinthe's info as the second argument and, therefore, must have arity 2. See example in `generate_functions/3`.
 
   The accepted values for `:only` and `:except` are: `#{inspect(@all_functions)}`.
@@ -103,6 +105,7 @@ defmodule Crudry.Resolver do
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
     Module.put_attribute(__CALLER__.module, :list_opts, opts[:list_opts])
     Module.put_attribute(__CALLER__.module, :create_resolver, opts[:create_resolver])
+    Module.put_attribute(__CALLER__.module, :not_found_message, opts[:not_found_message])
   end
 
   @doc """
@@ -173,12 +176,14 @@ defmodule Crudry.Resolver do
     except = Module.get_attribute(module, :except)
     list_opts = Module.get_attribute(module, :list_opts)
     create_resolver = Module.get_attribute(module, :create_resolver)
+    not_found_message = Module.get_attribute(module, :not_found_message)
 
     [
       only: only || [],
       except: except || [],
       list_opts: list_opts || [],
-      create_resolver: create_resolver || nil
+      create_resolver: create_resolver || nil,
+      not_found_message: not_found_message || "not found"
     ]
   end
 end

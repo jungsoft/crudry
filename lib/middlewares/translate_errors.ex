@@ -1,6 +1,6 @@
 defmodule Crudry.Middlewares.TranslateErrors do
   @moduledoc """
-  Absinthe Middleware to translate errors and changeset errors into human readable messages using [Gettext](https://github.com/elixir-lang/gettext).
+  Absinthe Middleware to translate errors and changeset errors into human readable messages. It support nested changeset errors and internationalization, using [Gettext](https://github.com/elixir-lang/gettext).
 
   ## Usage
 
@@ -105,8 +105,23 @@ defmodule Crudry.Middlewares.TranslateErrors do
     |> List.flatten()
   end
 
-  defp handle_error(error, translator, locale) do
-    [translate_with_domain(translator, locale, :errors_domain, error)]
+  defp handle_error(%{message: message, schema: schema}, translator, locale) do
+    translated_message = translate_with_domain(translator, locale, :errors_domain, message)
+
+    schema
+    |> message_to_string([translated_message], translator, locale)
+    |> List.wrap()
+  end
+
+  defp handle_error(error, translator, locale) when is_binary(error) do
+    translator
+    |> translate_with_domain(locale, :errors_domain, error)
+    |> List.wrap()
+  end
+
+  # If it's a map, a number or a keyword list, we don't try to translate
+  defp handle_error(error, _translator, _locale) do
+    List.wrap(error)
   end
 
   defp translate_with_domain(translator, locale, domain, msgid, bindings \\ %{}) do
@@ -134,7 +149,7 @@ defmodule Crudry.Middlewares.TranslateErrors do
   # Simple case (e.g. key: `label`, value: `"does not exist"`)
   # Just concatenate strings
   defp message_to_string(key, [value], translator, locale) when is_binary(value) do
-    translated_field = translate_with_domain(translator, locale, :schema_fields_domain, to_string(key))
+    translated_field = translate_with_domain(translator, locale, :schemas_domain, to_string(key))
 
     "#{translated_field} #{value}"
   end

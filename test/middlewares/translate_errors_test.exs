@@ -156,6 +156,30 @@ defmodule TranslateErrorsTest do
              ])
   end
 
+  test "translate keyword list errors" do
+    resolution = build_resolution(%{message: "not found", schema: "user"})
+
+    assert TranslateErrors.call(resolution, :_)[:errors] == ["user not found"]
+  end
+
+  test "translate keyword list errors to portuguese" do
+    resolution = build_resolution(%{message: "not found", schema: "user"}, %{locale: "pt_BR"})
+
+    assert TranslateErrors.call(resolution, :_)[:errors] == ["usuário não encontrado"]
+  end
+
+  test "do not try to translate unknown maps" do
+    resolution = build_resolution(%{message: "random message"})
+
+    assert TranslateErrors.call(resolution, :_)[:errors] == [%{message: "random message"}]
+  end
+
+  test "do not try to translate numbers" do
+    resolution = build_resolution(2)
+
+    assert TranslateErrors.call(resolution, :_)[:errors] == [2]
+  end
+
   defp build_resolution(errors, context \\ %{})
 
   defp build_resolution(errors, context) when is_list(errors) do

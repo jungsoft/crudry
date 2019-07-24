@@ -14,3 +14,6 @@ msgstr "não pode estar vazio"
 
 msgid "Not logged in"
 msgstr "Não está logado"
+
+msgid  "not found"
+msgstr "não encontrado"
