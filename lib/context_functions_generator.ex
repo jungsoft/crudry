@@ -128,26 +128,26 @@ defmodule ContextFunctionsGenerator do
 
   def generate_function(:update, name, _pluralized_name, module, opts) do
     quote do
-      def unquote(:"update_#{name}")(%module{} = struct, attrs) do
+      def unquote(:"update_#{name}")(%unquote(module){} = struct, attrs) do
         struct
         |> unquote(module).unquote(opts[:update])(attrs)
         |> alias!(Repo).update()
       end
 
-      def unquote(:"update_#{name}!")(%module{} = struct, attrs) do
+      def unquote(:"update_#{name}!")(%unquote(module){} = struct, attrs) do
         struct
         |> unquote(module).unquote(opts[:update])(attrs)
         |> alias!(Repo).update!()
       end
 
-      def unquote(:"update_#{name}_with_assocs")(%module{} = struct, attrs, assocs) do
+      def unquote(:"update_#{name}_with_assocs")(%unquote(module){} = struct, attrs, assocs) do
         struct
         |> alias!(Repo).preload(assocs)
         |> unquote(module).unquote(opts[:update])(attrs)
         |> alias!(Repo).update()
       end
 
-      def unquote(:"update_#{name}_with_assocs!")(%module{} = struct, attrs, assocs) do
+      def unquote(:"update_#{name}_with_assocs!")(%unquote(module){} = struct, attrs, assocs) do
         struct
         |> alias!(Repo).preload(assocs)
         |> unquote(module).unquote(opts[:update])(attrs)
@@ -158,14 +158,14 @@ defmodule ContextFunctionsGenerator do
 
   def generate_function(:delete, name, _pluralized_name, module, opts) do
     quote do
-      def unquote(:"delete_#{name}")(%module{} = struct) do
+      def unquote(:"delete_#{name}")(%unquote(module){} = struct) do
         struct
         |> Ecto.Changeset.change()
         |> check_assocs(unquote(opts[:check_constraints_on_delete]))
         |> alias!(Repo).delete()
       end
 
-      def unquote(:"delete_#{name}!")(%module{} = struct) do
+      def unquote(:"delete_#{name}!")(%unquote(module){} = struct) do
         struct
         |> Ecto.Changeset.change()
         |> check_assocs(unquote(opts[:check_constraints_on_delete]))
