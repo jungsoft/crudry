@@ -40,17 +40,21 @@ defmodule Crudry.Resolver do
         end
 
         def update_my_schema(%{id: id, params: params}, _info) do
-          MyContext.update_my_schema(id, params)
+          id
+          |> MyContext.get_my_schema()
+          |> nil_to_error("my_schema", fn record -> MyContext.update_my_schema(record, params) end)
         end
 
         def delete_my_schema(%{id: id}, _info) do
-          MyContext.delete_my_schema(id)
+          id
+          |> MyContext.get_my_schema()
+          |> nil_to_error("my_schema", fn record -> MyContext.delete_my_schema(record) end)
         end
 
         # If `result` is `nil`, return an error. Otherwise, apply `func` to the `result`.
         def nil_to_error(result, name, func) do
           case result do
-            nil -> {:error, "\#{name} not found."}
+            nil -> {:error, %{message: "not found", schema: name}}
             %{} = record -> func.(record)
           end
         end
@@ -114,6 +118,27 @@ defmodule Crudry.Resolver do
   Custom options can be given. To see the available options, refer to the documenation of `Crudry.Resolver.default/1`.
 
   ## Examples
+
+  ### Overriding functions
+
+    To define a custom function, add it to `except` and define your own. In the following example, the schema is updated with its association.
+
+      defmodule MyApp.Resolver do
+        alias MyApp.Repo
+        alias MyApp.MyContext
+        alias MyApp.MySchema
+        require Crudry.Resolver
+
+        Crudry.Resolver.generate_functions MyContext, MySchema, except: [:update]
+
+        def update_my_schema(%{id: id, params: params}, _info) do
+          id
+          |> MyContext.get_my_schema()
+          |> nil_to_error("My Schema", fn record -> MyContext.update_my_schema_with_assocs(record, params, [:assoc]) end)
+        end
+      end
+
+    By using the `nil_to_error` function, we DRY the nil checking and also ensure the error message is the same as the other auto-generated functions.
 
   ### Custom create resolver
 
