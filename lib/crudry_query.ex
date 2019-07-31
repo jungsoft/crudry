@@ -28,7 +28,7 @@ defmodule Crudry.Query do
   * `offset`: defaults to `0`
   * `sorting_order`: defaults to `:asc` (only works if there is also a `order_by` specified)
   * `order_by`: defaults to not ordering
-  * `custom_query`: A function that receives the initial query as argument and returns a custom query. Defaults to initial_query
+  * `custom_query`: A function that receives the initial query as argument and returns a custom query. Defaults to `initial_query`
 
   ## Examples
 
@@ -66,7 +66,7 @@ defmodule Crudry.Query do
       Crudry.Query.search(MySchema, "John", [:name])
   """
   def search(initial_query, nil, _fields) do
-    from(initial_query)
+    initial_query
   end
 
   def search(initial_query, search_term, fields) do
@@ -100,6 +100,7 @@ defmodule Crudry.Query do
           [m],
           field(m, ^field) in ^filter_arr
         )
+
       {field, filter}, query_acc ->
         query_acc
         |> where(

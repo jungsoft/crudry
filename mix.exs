@@ -1,19 +1,24 @@
 defmodule Crudry.MixProject do
   use Mix.Project
 
+  @github_url "https://github.com/gabrielpra1/crudry"
+
   def project do
     [
       app: :crudry,
       version: "1.5.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
+      compilers: [:gettext] ++ Mix.compilers,
       deps: deps(),
       name: "Crudry",
-      source_url: "https://github.com/gabrielpra1/crudry",
+      source_url: @github_url,
       description: "Crudry is a library for DRYing CRUD.",
       package: package(),
       elixirc_paths: elixirc_paths(Mix.env()),
-      aliases: aliases()
+      aliases: aliases(),
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test]
     ]
   end
 
@@ -22,8 +27,7 @@ defmodule Crudry.MixProject do
 
   defp aliases do
     [
-      # Ensures database is reset before tests are run
-      test: ["ecto.drop", "ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["ecto.create --quiet", "ecto.migrate", "test"]
     ]
   end
 
@@ -37,9 +41,9 @@ defmodule Crudry.MixProject do
   defp package do
     [
       files: ~w(lib mix.exs README*),
-      licenses: ["Apache 2.0"],
+      licenses: ["MIT"],
       links: %{
-        "GitHub" => "https://github.com/gabrielpra1/crudry",
+        "GitHub" => @github_url,
         "Docs" => "https://hexdocs.pm/crudry/"
       }
     ]
@@ -49,11 +53,12 @@ defmodule Crudry.MixProject do
   defp deps do
     [
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
-      {:inflex, "~> 1.10.0"},
       {:ecto, "~> 3.0"},
       {:ecto_sql, "~> 3.0", only: :test},
       {:postgrex, ">= 0.0.0", only: :test},
-      {:absinthe, "~> 1.4.0"}
+      {:absinthe, "~> 1.4.0"},
+      {:excoveralls, "~> 0.11", only: :test},
+      {:gettext, ">= 0.0.0"},
     ]
   end
 end

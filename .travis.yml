@@ -1,0 +1,11 @@
+language: elixir
+elixir:
+  - 1.9.0
+otp_release:
+  - 22.0
+services:
+  - postgresql
+before_script:
+  - cp config/db.travis.exs config/db.secret.exs
+script:
+  - MIX_ENV=test mix coveralls.travis
