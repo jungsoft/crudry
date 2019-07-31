@@ -115,7 +115,7 @@ defmodule Crudry.Resolver do
   @doc """
   Generates CRUD functions for the `schema_module` resolver.
 
-  Custom options can be given. To see the available options, refer to the documenation of `Crudry.Resolver.default/1`.
+  Custom options can be given. To see the available options, refer to the documenation of `Crudry.Resolver.default/1`, noting that the `not_found_message` must only be configured using `default/1`.
 
   ## Examples
 
@@ -185,6 +185,8 @@ defmodule Crudry.Resolver do
       end
   """
   defmacro generate_functions(context, schema_module, opts \\ []) do
+    if Keyword.has_key?(opts, :not_found_message), do: raise "not_found_message can only be configured using default/1"
+
     opts = Keyword.merge(load_default(__CALLER__.module), opts)
     name = Helper.get_underscored_name(schema_module)
     pluralized_name = Helper.get_pluralized_name(schema_module, __CALLER__)

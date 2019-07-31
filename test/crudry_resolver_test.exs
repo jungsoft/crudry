@@ -336,12 +336,13 @@ defmodule CrudryResolverTest do
     assert new_user.username == params.username
   end
 
-  test "override not found message" do
-    defmodule UserResolverNilToError do
-      Crudry.Resolver.generate_functions Users, User, not_found_message: "inexistent"
+  test "override not found message cannot be defined by schema" do
+    assert_raise RuntimeError, fn ->
+      defmodule UserResolverNilToError do
+        Crudry.Resolver.generate_functions Users, User, not_found_message: "inexistent"
+        Crudry.Resolver.generate_functions Posts, Post, not_found_message: "could not found"
+      end
     end
-
-    {:error, %{message: "inexistent", schema: "user"}} = UserResolverNilToError.update_user(%{id: -1, params: %{name: "name"}}, @info)
   end
 
   test "define default not found message" do
