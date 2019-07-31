@@ -22,8 +22,6 @@ def deps do
 end
 ```
 
-----
-
 ## Usage
 
 ### Context Generation
@@ -102,14 +100,10 @@ end
 
 Refer to the [TranslateErrors docs](https://hexdocs.pm/crudry/Crudry.Middlewares.TranslateErrors.html) for more information.
 
-----
-
 ## Related Projects
 
 * [Rajska](https://github.com/rschef/rajska) is an elixir authorization library for Absinthe.
 * [Uploadex](https://github.com/gabrielpra1/uploadex) is an elixir library for handling uploads using Ecto and Arc
-
-----
 
 ## License
 
