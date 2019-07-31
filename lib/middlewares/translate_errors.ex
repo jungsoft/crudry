@@ -98,14 +98,14 @@ defmodule Crudry.Middlewares.TranslateErrors do
   defp get_locale(%{context: %{locale: locale}}, _translator), do: locale
   defp get_locale(_res, translator), do: Gettext.get_locale(translator)
 
-  defp handle_error(%Ecto.Changeset{} = changeset, translator, locale) do
+  def handle_error(%Ecto.Changeset{} = changeset, translator, locale) do
     changeset
     |> Changeset.traverse_errors(& translate_error(&1, translator, locale))
     |> Enum.map(fn {key, value} -> message_to_string(key, value, translator, locale) end)
     |> List.flatten()
   end
 
-  defp handle_error(%{message: message, schema: schema}, translator, locale) do
+  def handle_error(%{message: message, schema: schema}, translator, locale) do
     translated_message = translate_with_domain(translator, locale, :errors_domain, message)
 
     schema
@@ -113,14 +113,14 @@ defmodule Crudry.Middlewares.TranslateErrors do
     |> List.wrap()
   end
 
-  defp handle_error(error, translator, locale) when is_binary(error) do
+  def handle_error(error, translator, locale) when is_binary(error) do
     translator
     |> translate_with_domain(locale, :errors_domain, error)
     |> List.wrap()
   end
 
   # If it's a map, a number or a keyword list, we don't try to translate
-  defp handle_error(error, _translator, _locale) do
+  def handle_error(error, _translator, _locale) do
     List.wrap(error)
   end
 
