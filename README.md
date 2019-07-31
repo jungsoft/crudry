@@ -8,6 +8,8 @@ It also provides a simple middleware for translating changeset errors into reada
 
 Documentation can be found at [https://hexdocs.pm/crudry](https://hexdocs.pm/crudry).
 
+The changelog can be found at the [Releases page](https://github.com/gabrielpra1/crudry/releases).
+
 ## Installation
 
 The package can be installed by adding `crudry` to your list of dependencies in `mix.exs`:
@@ -15,10 +17,12 @@ The package can be installed by adding `crudry` to your list of dependencies in 
 ```elixir
 def deps do
   [
-    {:crudry, "~> 1.5.0"},
+    {:crudry, "~> 2.0.0"},
   ]
 end
 ```
+
+----
 
 ## Usage
 
@@ -36,6 +40,7 @@ end
 ```
 
 To see the functions that are generated and custom options, refer to the [Crudry.Context docs](https://hexdocs.pm/crudry/Crudry.Context.html#module-usage).
+
 
 ### Resolver Generation
 
@@ -56,20 +61,20 @@ To see the functions that are generated and custom options, refer to the [Crudry
 
 Absinthe Middleware to translate errors and changeset errors into human readable messages. It support nested changeset errors and internationalization, using [Gettext](https://github.com/elixir-lang/gettext).
 
-The `create`, `update` and `delete` functions in the resolver all return `Ecto.Changeset` as errors, so it's useful to translate them into human readable messages.
+To handle errors for a field, add it after the resolve, using [`middleware/2`](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-the-middleware-2-macro):
 
-Crudry provides an `Absinthe.Middleware` to help with that, handling nested changeset errors. Just add it as a middleware to your mutations:
+```elixir
+alias Crudry.Middlewares.TranslateErrors
 
-```elxixir
 field :create_user, :user do
   arg :params, non_null(:user_params)
 
   resolve &UsersResolver.create_user/2
-  middleware Crudry.Middlewares.TranslateErrors
+  middleware TranslateErrors
 end
 ```
 
-Or define it for all queries and mutations, using [middleware/3](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-object-wide-authentication):
+To handle errors for all fields, use [middleware/3](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-object-wide-authentication):
 
 ```elixir
 alias Crudry.Middlewares.TranslateErrors
@@ -97,10 +102,14 @@ end
 
 Refer to the [TranslateErrors docs](https://hexdocs.pm/crudry/Crudry.Middlewares.TranslateErrors.html) for more information.
 
+----
+
 ## Related Projects
 
 * [Rajska](https://github.com/rschef/rajska) is an elixir authorization library for Absinthe.
 * [Uploadex](https://github.com/gabrielpra1/uploadex) is an elixir library for handling uploads using Ecto and Arc
+
+----
 
 ## License
 
