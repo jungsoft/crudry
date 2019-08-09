@@ -172,10 +172,14 @@ defmodule Crudry.Middlewares.TranslateErrors do
   # key: `map`, value: `%{definition: ["cant be blank"]}`
   # Only add `key: ` to the start of the string if this is the last level of nesting.
   defp message_to_string(key, %{} = value, translator, locale) do
+    translated_key = translate_with_domain(translator, locale, :schemas_domain, to_string(key))
+
     Enum.map(value, fn {inner_key, inner_value} ->
+      translated_inner_value = message_to_string(inner_key, inner_value, translator, locale)
+
       case get_value(inner_value) do
-        %{} -> message_to_string(inner_key, inner_value, translator, locale)
-        _ -> "#{key}: #{message_to_string(inner_key, inner_value, translator, locale)}"
+        %{} -> translated_inner_value
+        _ -> "#{translated_key}: #{translated_inner_value}"
       end
     end)
   end
