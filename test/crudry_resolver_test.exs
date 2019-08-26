@@ -315,6 +315,26 @@ defmodule CrudryResolverTest do
     assert new_user.username == params.username
   end
 
+  test "Custom update_resolver receives correct arguments" do
+    defmodule UserResolverUpdate do
+      def update_resolver(context, schema_name, record, args, %{context: %{current_user: %{company_id: company_id}}}) do
+        apply(context, :"update_#{schema_name}", [record, Map.put(args.params, :company_id, company_id)])
+      end
+
+      Crudry.Resolver.generate_functions(Users, User, update_resolver: &update_resolver/5)
+    end
+
+    {:ok, company} = Companies.create_company(%{name: "Nike"})
+    {:ok, user} = Users.create_user(%{username: "test", company_id: company.id})
+    info = %{context: %{current_user: user}}
+    params = %{username: "Jonas"}
+
+    {:ok, new_user} = UserResolverUpdate.update_user(%{id: user.id, params: params}, info)
+
+    assert new_user.company_id == company.id
+    assert new_user.username == params.username
+  end
+
   test "Custom create_resolver can be defined as default" do
     defmodule UserResolverDefault do
       def create_resolver(context, schema_name, args, %{context: %{current_user: %{company_id: company_id}}}) do

@@ -109,6 +109,8 @@ defmodule Crudry.Resolver do
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
     Module.put_attribute(__CALLER__.module, :list_opts, opts[:list_opts])
     Module.put_attribute(__CALLER__.module, :create_resolver, opts[:create_resolver])
+    Module.put_attribute(__CALLER__.module, :update_resolver, opts[:update_resolver])
+    Module.put_attribute(__CALLER__.module, :delete_resolver, opts[:delete_resolver])
     Module.put_attribute(__CALLER__.module, :not_found_message, opts[:not_found_message])
   end
 
@@ -203,6 +205,8 @@ defmodule Crudry.Resolver do
     except = Module.get_attribute(module, :except)
     list_opts = Module.get_attribute(module, :list_opts)
     create_resolver = Module.get_attribute(module, :create_resolver)
+    update_resolver = Module.get_attribute(module, :update_resolver)
+    delete_resolver = Module.get_attribute(module, :create_resolver)
     not_found_message = Module.get_attribute(module, :not_found_message)
 
     [
@@ -210,6 +214,8 @@ defmodule Crudry.Resolver do
       except: except || [],
       list_opts: list_opts || [],
       create_resolver: create_resolver || nil,
+      update_resolver: update_resolver || nil,
+      delete_resolver: delete_resolver || nil,
       not_found_message: not_found_message || "not found"
     ]
   end
