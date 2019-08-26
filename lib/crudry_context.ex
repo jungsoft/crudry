@@ -217,6 +217,7 @@ defmodule Crudry.Context do
     Module.put_attribute(__CALLER__.module, :update_changeset, opts[:update])
     Module.put_attribute(__CALLER__.module, :only, opts[:only])
     Module.put_attribute(__CALLER__.module, :except, opts[:except])
+    Module.put_attribute(__CALLER__.module, :repo, opts[:repo])
   end
 
   @doc """
@@ -270,6 +271,7 @@ defmodule Crudry.Context do
     update_changeset = Module.get_attribute(module, :update_changeset)
     only = Module.get_attribute(module, :only)
     except = Module.get_attribute(module, :except)
+    repo = Module.get_attribute(module, :repo)
 
     [
       create: create_changeset || :changeset,
@@ -277,6 +279,7 @@ defmodule Crudry.Context do
       only: only || [],
       except: except || [],
       check_constraints_on_delete: [],
+      repo: repo,
     ]
   end
 end
