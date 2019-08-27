@@ -206,7 +206,7 @@ defmodule Crudry.Resolver do
     list_opts = Module.get_attribute(module, :list_opts)
     create_resolver = Module.get_attribute(module, :create_resolver)
     update_resolver = Module.get_attribute(module, :update_resolver)
-    delete_resolver = Module.get_attribute(module, :create_resolver)
+    delete_resolver = Module.get_attribute(module, :delete_resolver)
     not_found_message = Module.get_attribute(module, :not_found_message)
 
     [
