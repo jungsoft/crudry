@@ -38,27 +38,31 @@ defmodule ResolverFunctionsGenerator do
     end
   end
 
-  def generate_function(:update, name, _pluralized_name, context, _opts) do
+  def generate_function(:update, name, _pluralized_name, context, opts) do
     quote do
-      def unquote(:"update_#{name}")(%{id: id, params: params}, _info) do
+      def unquote(:"update_#{name}")(%{id: id, params: params} = args, info) do
         unquote(context)
         |> apply(String.to_existing_atom("get_#{unquote(name)}"), [id])
         |> nil_to_error(unquote(name), fn record ->
-          unquote(context)
-          |> apply(String.to_existing_atom("update_#{unquote(name)}"), [record, params])
+          case Keyword.get(unquote(opts), :update_resolver, nil) do
+            nil -> apply(unquote(context), String.to_existing_atom("update_#{unquote(name)}"), [record, params])
+            update_resolver -> update_resolver.(unquote(context), unquote(name), record, args, info)
+          end
         end)
       end
     end
   end
 
-  def generate_function(:delete, name, _pluralized_name, context, _opts) do
+  def generate_function(:delete, name, _pluralized_name, context, opts) do
     quote do
-      def unquote(:"delete_#{name}")(%{id: id}, _info) do
+      def unquote(:"delete_#{name}")(%{id: id}, info) do
         unquote(context)
         |> apply(String.to_existing_atom("get_#{unquote(name)}"), [id])
         |> nil_to_error(unquote(name), fn record ->
-          unquote(context)
-          |> apply(String.to_existing_atom("delete_#{unquote(name)}"), [record])
+          case Keyword.get(unquote(opts), :delete_resolver, nil) do
+            nil -> apply(unquote(context), String.to_existing_atom("delete_#{unquote(name)}"), [record])
+            delete_resolver -> delete_resolver.(unquote(context), unquote(name), record, info)
+          end
         end)
       end
     end

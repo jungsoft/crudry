@@ -299,4 +299,29 @@ defmodule CrudryContextTest do
       assert ContextPluralize.list_categories_schema_source() == [record]
     end
   end
+
+  describe "Define Repo" do
+    test "by default" do
+      defmodule ContextRepoDefault do
+        alias Crudry.User
+
+        Crudry.Context.default repo: Crudry.Repo
+        Crudry.Context.generate_functions(User)
+      end
+
+      username = @user.username
+      assert {:ok, %Crudry.User{username: ^username}} = ContextRepoDefault.create_user(@user)
+    end
+
+    test "by schema" do
+      defmodule ContextRepoSchema do
+        alias Crudry.User
+
+        Crudry.Context.generate_functions(User, repo: Crudry.Repo)
+      end
+
+      username = @user.username
+      assert {:ok, %Crudry.User{username: ^username}} = ContextRepoSchema.create_user(@user)
+    end
+  end
 end

@@ -315,8 +315,44 @@ defmodule CrudryResolverTest do
     assert new_user.username == params.username
   end
 
+  test "Custom update_resolver receives correct arguments" do
+    defmodule UserResolverUpdate do
+      def update_resolver(context, schema_name, record, args, %{context: %{current_user: %{company_id: company_id}}}) do
+        apply(context, :"update_#{schema_name}", [record, Map.put(args.params, :company_id, company_id)])
+      end
+
+      Crudry.Resolver.generate_functions(Users, User, update_resolver: &update_resolver/5)
+    end
+
+    {:ok, company} = Companies.create_company(%{name: "Nike"})
+    {:ok, user} = Users.create_user(%{username: "test", company_id: company.id})
+    info = %{context: %{current_user: user}}
+    params = %{username: "Jonas"}
+
+    {:ok, new_user} = UserResolverUpdate.update_user(%{id: user.id, params: params}, info)
+
+    assert new_user.company_id == company.id
+    assert new_user.username == params.username
+  end
+
+  test "Custom delete_resolver receives correct arguments" do
+    defmodule UserResolverDelete do
+      def delete_resolver(context, schema_name, record, _info) do
+        apply(context, :"delete_#{schema_name}", [record])
+      end
+
+      Crudry.Resolver.generate_functions(Users, User, delete_resolver: &delete_resolver/4)
+    end
+
+    {:ok, user} = Users.create_user(%{username: "test"})
+    info = %{context: %{current_user: user}}
+
+    {:ok, _deleted_user} = UserResolverDelete.delete_user(%{id: user.id}, info)
+    assert Users.get_user(user.id) == nil
+  end
+
   test "Custom create_resolver can be defined as default" do
-    defmodule UserResolverDefault do
+    defmodule UserResolverCreateDefault do
       def create_resolver(context, schema_name, args, %{context: %{current_user: %{company_id: company_id}}}) do
         apply(context, :"create_#{schema_name}", [Map.put(args.params, :company_id, company_id)])
       end
@@ -330,10 +366,48 @@ defmodule CrudryResolverTest do
     info = %{context: %{current_user: user}}
     params = %{username: "Jonas"}
 
-    {:ok, new_user} = UserResolverDefault.create_user(%{params: params}, info)
+    {:ok, new_user} = UserResolverCreateDefault.create_user(%{params: params}, info)
 
     assert new_user.company_id == company.id
     assert new_user.username == params.username
+  end
+
+  test "Custom update_resolver can be defined as default" do
+    defmodule UserResolverUpdateDefault do
+      def update_resolver(context, schema_name, record, args, %{context: %{current_user: %{company_id: company_id}}}) do
+        apply(context, :"update_#{schema_name}", [record, Map.put(args.params, :company_id, company_id)])
+      end
+
+      Crudry.Resolver.default update_resolver: &update_resolver/5
+      Crudry.Resolver.generate_functions Users, User
+    end
+
+    {:ok, company} = Companies.create_company(%{name: "Nike"})
+    {:ok, user} = Users.create_user(%{username: "test", company_id: company.id})
+    info = %{context: %{current_user: user}}
+    params = %{username: "Jonas"}
+
+    {:ok, new_user} = UserResolverUpdateDefault.update_user(%{id: user.id, params: params}, info)
+
+    assert new_user.company_id == company.id
+    assert new_user.username == params.username
+  end
+
+  test "Custom delete_resolver can be defined as default" do
+    defmodule UserResolverDeleteDefault do
+      def delete_resolver(context, schema_name, record, _info) do
+        apply(context, :"delete_#{schema_name}", [record])
+      end
+
+      Crudry.Resolver.default delete_resolver: &delete_resolver/4
+      Crudry.Resolver.generate_functions Users, User
+    end
+
+    {:ok, user} = Users.create_user(%{username: "test"})
+    info = %{context: %{current_user: user}}
+
+    {:ok, _deleted_user} = UserResolverDeleteDefault.delete_user(%{id: user.id}, info)
+    assert Users.get_user(user.id) == nil
   end
 
   test "override not found message cannot be defined by schema" do
