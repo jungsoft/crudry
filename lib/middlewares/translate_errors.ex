@@ -161,10 +161,14 @@ defmodule Crudry.Middlewares.TranslateErrors do
   defp message_to_string(key, value, translator, locale) when is_list(value) do
     value
     |> Enum.reject(fn x -> x == %{} end)
-    |> Enum.map(fn x ->
-      Enum.map(x, fn {inner_key, inner_value} ->
-        message_to_string(key, Map.new([{inner_key, inner_value}]), translator, locale)
-      end)
+    |> Enum.map(fn
+      string when is_binary(string) ->
+        message_to_string(key, [string], translator, locale)
+
+      list ->
+        Enum.map(list, fn {inner_key, inner_value} ->
+          message_to_string(key, Map.new([{inner_key, inner_value}]), translator, locale)
+        end)
     end)
   end
 
