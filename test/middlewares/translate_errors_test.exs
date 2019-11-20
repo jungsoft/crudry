@@ -30,6 +30,14 @@ defmodule TranslateErrorsTest do
              build_resolution("username should be at least 2 character(s)")
   end
 
+  test "translate multiple changeset errors that belongs to only one field" do
+    changeset = User.changeset(%User{}, %{username: "username", password: "a"})
+    resolution = build_resolution(changeset)
+
+    assert TranslateErrors.call(resolution, :_) ==
+    build_resolution(["password Password must contain an upper-case letter", "password Password must contain a number", "password should be at least 8 character(s)"])
+  end
+
   test "translate validate_number changeset error" do
     changeset = User.changeset(%User{}, %{username: "name", age: -5})
     resolution = build_resolution(changeset)
