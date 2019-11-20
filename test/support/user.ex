@@ -40,8 +40,8 @@ defmodule Crudry.User do
     |> validate_length(:username, min: 2)
     |> validate_number(:age, greater_than: 0)
     |> validate_length(:password, min: 8)
-    |> validate_format(:password, ~r/[0-9]+/, message: "Password must contain a number")
-    |> validate_format(:password, ~r/[A-Z]+/, message: "Password must contain an upper-case letter")
-    |> validate_format(:password, ~r/[a-z]+/, message: "Password must contain a lower-case letter")
+    |> validate_format(:password, ~r/[0-9]+/, message: "must contain a number")
+    |> validate_format(:password, ~r/[A-Z]+/, message: "must contain an upper-case letter")
+    |> validate_format(:password, ~r/[a-z]+/, message: "must contain a lower-case letter")
   end
 end

@@ -35,7 +35,7 @@ defmodule TranslateErrorsTest do
     resolution = build_resolution(changeset)
 
     assert TranslateErrors.call(resolution, :_) ==
-    build_resolution(["password Password must contain an upper-case letter", "password Password must contain a number", "password should be at least 8 character(s)"])
+    build_resolution(["password must contain an upper-case letter", "password must contain a number", "password should be at least 8 character(s)"])
   end
 
   test "translate validate_number changeset error" do

@@ -165,8 +165,8 @@ defmodule Crudry.Middlewares.TranslateErrors do
       string when is_binary(string) ->
         message_to_string(key, [string], translator, locale)
 
-      list ->
-        Enum.map(list, fn {inner_key, inner_value} ->
+      enumerable when is_list(enumerable) or is_map(enumerable) ->
+        Enum.map(enumerable, fn {inner_key, inner_value} ->
           message_to_string(key, Map.new([{inner_key, inner_value}]), translator, locale)
         end)
     end)
