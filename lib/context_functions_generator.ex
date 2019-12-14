@@ -174,8 +174,6 @@ defmodule ContextFunctionsGenerator do
 
   def generate_function(:check_assocs, _, _, _, _) do
     quote do
-      defp unquote(:check_assocs)(changeset, nil), do: changeset
-
       defp unquote(:check_assocs)(changeset, constraints) when is_list(constraints) do
         Enum.reduce(constraints, changeset, fn i, acc ->
           Ecto.Changeset.no_assoc_constraint(acc, i)
