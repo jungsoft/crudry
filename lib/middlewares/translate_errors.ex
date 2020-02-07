@@ -6,15 +6,15 @@ defmodule Crudry.Middlewares.TranslateErrors do
 
   `Cudry.Translator` is used by default to translate error messages to the default locale `en`. You can also use your own Gettext module by adding it to your Absinthe's schema `context/1` function:
 
-    def context(context) do
-      Map.put(context, :translator, MyAppWeb.Gettext)
-    end
+      def context(context) do
+        Map.put(context, :translator, MyAppWeb.Gettext)
+      end
 
   Or just override the default locale in your [Context Plug](https://hexdocs.pm/absinthe/context-and-authentication.html#context-and-plugs):
 
-    def call(conn, _) do
-      Absinthe.Plug.put_options(conn, context: %{locale: "pt_BR"})
-    end
+      def call(conn, _) do
+        Absinthe.Plug.put_options(conn, context: %{locale: "pt_BR"})
+      end
 
   Then, to handle errors for a field, add it after the resolve, using [`middleware/2`](https://hexdocs.pm/absinthe/Absinthe.Middleware.html#module-the-middleware-2-macro):
 

@@ -26,9 +26,9 @@ defmodule Crudry.Translator do
 
   You can also define and use your own Translator module in `Crudry.Middlewares.TranslateErrors` by adding it to your Absinthe's schema `context/1` function:
 
-    def context(context) do
-      Map.put(context, :translator, MyApp.Translator)
-    end
+      def context(context) do
+        Map.put(context, :translator, MyApp.Translator)
+      end
   """
   use Gettext, otp_app: :crudry
 

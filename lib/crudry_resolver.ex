@@ -185,6 +185,8 @@ defmodule Crudry.Resolver do
       def list_my_schemas(_args, info) do
         {:ok, MyContext.list_my_schemas(custom_query: add_info_to_custom_query(scope_list, info))}
       end
+
+    See `Crudry.Query.list/2` for further information on the `custom_query` option.
   """
   defmacro generate_functions(context, schema_module, opts \\ []) do
     if Keyword.has_key?(opts, :not_found_message), do: raise "not_found_message can only be configured using default/1"
