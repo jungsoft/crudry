@@ -38,6 +38,13 @@ defmodule Crudry.Repo.Migrations.CreateTables do
       timestamps()
     end
 
+    create table(:messages, primary_key: false) do
+      add :uid, :uuid, primary_key: true
+      add :content, :text
+
+      timestamps()
+    end
+
     create table(:camelized_schema_names) do
       add :content, :string
 
