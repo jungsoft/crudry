@@ -2,7 +2,12 @@ defmodule CrudryResolverTest do
   use ExUnit.Case
   doctest Crudry.Resolver
 
-  alias Crudry.{Post, Repo, User}
+  alias Crudry.{
+    Message,
+    Post,
+    Repo,
+    User,
+  }
   import Ecto.Query
 
   defmodule Users do
@@ -46,6 +51,15 @@ defmodule CrudryResolverTest do
     require Crudry.Context
 
     Crudry.Context.generate_functions(Category)
+  end
+
+  defmodule Messages do
+    alias Crudry.Message
+
+    require Crudry.Context
+    alias Crudry.Context
+
+    Context.generate_functions(Message)
   end
 
   @info %{}
@@ -425,6 +439,25 @@ defmodule CrudryResolverTest do
       Crudry.Resolver.generate_functions Users, User
     end
 
-    {:error, %{message: "inexistent", schema: "user"}} = UserResolverDefaultNilToError.update_user(%{id: -1, params: %{name: "name"}}, @info)
+    assert {:error, %{message: "inexistent", schema: "user"}} = UserResolverDefaultNilToError.update_user(%{id: -1, params: %{name: "name"}}, @info)
+  end
+
+  test "define custom primary key" do
+    defmodule DefaultCustomPKResolver do
+      Crudry.Resolver.default primary_key: :uid
+      Crudry.Resolver.generate_functions Messages, Message
+    end
+
+    defmodule CustomPKResolver do
+      Crudry.Resolver.generate_functions Messages, Message, primary_key: :uid
+    end
+
+    {:ok, %Message{uid: uid}} = Messages.create_message(%{content: "text"})
+    new_content = "new content"
+
+    assert {:ok, %Message{content: ^new_content}} = DefaultCustomPKResolver.update_message(%{uid: uid, params: %{content: new_content}}, @info)
+    assert {:ok, %Message{content: ^new_content}} = CustomPKResolver.update_message(%{uid: uid, params: %{content: new_content}}, @info)
+    assert {:ok, %Message{uid: ^uid}} = CustomPKResolver.get_message(%{uid: uid}, @info)
+    assert {:ok, %Message{uid: ^uid}} = CustomPKResolver.delete_message(%{uid: uid}, @info)
   end
 end

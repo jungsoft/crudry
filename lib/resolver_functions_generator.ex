@@ -1,9 +1,9 @@
 defmodule ResolverFunctionsGenerator do
   @moduledoc false
 
-  def generate_function(:get, name, _pluralized_name, context, _opts) do
+  def generate_function(:get, name, _pluralized_name, context, opts) do
     quote do
-      def unquote(:"get_#{name}")(%{id: id}, _info) do
+      def unquote(:"get_#{name}")(%{unquote(opts[:primary_key]) => id}, _info) do
         apply(unquote(context), String.to_existing_atom("get_#{unquote(name)}"), [id])
         |> nil_to_error(unquote(name), fn record -> {:ok, record} end)
       end
@@ -40,7 +40,7 @@ defmodule ResolverFunctionsGenerator do
 
   def generate_function(:update, name, _pluralized_name, context, opts) do
     quote do
-      def unquote(:"update_#{name}")(%{id: id, params: params} = args, info) do
+      def unquote(:"update_#{name}")(%{unquote(opts[:primary_key]) => id, params: params} = args, info) do
         unquote(context)
         |> apply(String.to_existing_atom("get_#{unquote(name)}"), [id])
         |> nil_to_error(unquote(name), fn record ->
@@ -55,7 +55,7 @@ defmodule ResolverFunctionsGenerator do
 
   def generate_function(:delete, name, _pluralized_name, context, opts) do
     quote do
-      def unquote(:"delete_#{name}")(%{id: id}, info) do
+      def unquote(:"delete_#{name}")(%{unquote(opts[:primary_key]) => id}, info) do
         unquote(context)
         |> apply(String.to_existing_atom("get_#{unquote(name)}"), [id])
         |> nil_to_error(unquote(name), fn record ->

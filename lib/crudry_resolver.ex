@@ -112,6 +112,7 @@ defmodule Crudry.Resolver do
     Module.put_attribute(__CALLER__.module, :update_resolver, opts[:update_resolver])
     Module.put_attribute(__CALLER__.module, :delete_resolver, opts[:delete_resolver])
     Module.put_attribute(__CALLER__.module, :not_found_message, opts[:not_found_message])
+    Module.put_attribute(__CALLER__.module, :primary_key, opts[:primary_key])
   end
 
   @doc """
@@ -210,6 +211,7 @@ defmodule Crudry.Resolver do
     update_resolver = Module.get_attribute(module, :update_resolver)
     delete_resolver = Module.get_attribute(module, :delete_resolver)
     not_found_message = Module.get_attribute(module, :not_found_message)
+    primary_key = Module.get_attribute(module, :primary_key)
 
     [
       only: only || [],
@@ -218,7 +220,8 @@ defmodule Crudry.Resolver do
       create_resolver: create_resolver || nil,
       update_resolver: update_resolver || nil,
       delete_resolver: delete_resolver || nil,
-      not_found_message: not_found_message || "not found"
+      not_found_message: not_found_message || "not found",
+      primary_key: primary_key || :id
     ]
   end
 end
