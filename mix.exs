@@ -1,7 +1,7 @@
 defmodule Crudry.MixProject do
   use Mix.Project
 
-  @github_url "https://github.com/gabrielpra1/crudry"
+  @github_url "https://github.com/jungsoft/crudry"
 
   def project do
     [

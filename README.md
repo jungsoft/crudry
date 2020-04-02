@@ -1,6 +1,6 @@
 # Crudry
 
-[![Coverage Status](https://coveralls.io/repos/github/gabrielpra1/crudry/badge.svg?branch=master)](https://coveralls.io/github/gabrielpra1/crudry?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/jungsoft/crudry/badge.svg?branch=master)](https://coveralls.io/github/jungsoft/crudry?branch=master)
 
 Crudry is an elixir library for DRYing CRUD of Phoenix Contexts and Absinthe Resolvers.
 
@@ -8,7 +8,7 @@ It also provides a simple middleware for translating changeset errors into reada
 
 Documentation can be found at [https://hexdocs.pm/crudry](https://hexdocs.pm/crudry).
 
-The changelog can be found at the [Releases page](https://github.com/gabrielpra1/crudry/releases).
+The changelog can be found at the [Releases page](https://github.com/jungsoft/crudry/releases).
 
 ## Installation
 
@@ -102,8 +102,8 @@ Refer to the [TranslateErrors docs](https://hexdocs.pm/crudry/Crudry.Middlewares
 
 ## Related Projects
 
-* [Rajska](https://github.com/rschef/rajska) is an elixir authorization library for Absinthe.
-* [Uploadex](https://github.com/gabrielpra1/uploadex) is an elixir library for handling uploads using Ecto and Arc
+* [Rajska](https://github.com/jungsoft/rajska) is an elixir authorization library for Absinthe.
+* [Uploadex](https://github.com/jungsoft/uploadex) is an elixir library for handling uploads using Ecto and Arc
 
 ## License
 
