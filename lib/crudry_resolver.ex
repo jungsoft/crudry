@@ -86,6 +86,8 @@ defmodule Crudry.Resolver do
 
     * `not_found_message` - custom message for the `nil_to_error` function. Defaults to `"not found"`.
 
+    * `primary_key` - custom primary key argument to use in get, update and delete resolvers. Defaults to `:id`.
+
   Note: in `list_opts`, `custom_query` will receive absinthe's info as the second argument and, therefore, must have arity 2. See example in `generate_functions/3`.
 
   The accepted values for `:only` and `:except` are: `#{inspect(@all_functions)}`.
