@@ -6,7 +6,7 @@ defmodule Crudry.MixProject do
   def project do
     [
       app: :crudry,
-      version: "2.2.0",
+      version: "2.2.1",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       compilers: [:gettext] ++ Mix.compilers,
