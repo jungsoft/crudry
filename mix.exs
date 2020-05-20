@@ -53,10 +53,10 @@ defmodule Crudry.MixProject do
   defp deps do
     [
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
-      {:ecto, "~> 3.0"},
-      {:ecto_sql, "~> 3.0", only: :test},
+      {:ecto, ">= 3.0.0"},
+      {:ecto_sql, ">= 3.0.0", only: :test},
       {:postgrex, ">= 0.0.0", only: :test},
-      {:absinthe, "~> 1.4.0"},
+      {:absinthe, ">= 1.4.0"},
       {:excoveralls, "~> 0.11", only: :test},
       {:gettext, ">= 0.0.0"},
     ]
