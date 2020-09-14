@@ -36,6 +36,9 @@ defmodule Crudry.Query do
       Crudry.Query.list(MySchema, [limit: 10, offset: 3, sorting_order: :desc, order_by: :value])
       Crudry.Query.list(MySchema, %{order_by: "value"})
       Crudry.Query.list(MySchema, %{order_by: :value})
+      Crudry.Query.list(MySchema, %{order_by: ["age", "username"]})
+      Crudry.Query.list(MySchema, %{order_by: [:age, :username]})
+      Crudry.Query.list(MySchema, %{order_by: [asc: :age, desc: :username]})
       Crudry.Query.list(MySchema, custom_query: &MySchema.scope_list/1)
   """
   def list(initial_query, opts \\ []) do
