@@ -3,11 +3,11 @@ defmodule CrudryQueryTest do
 
   alias Crudry.{Repo, User}
 
-  @user %{username: "Chuck Norris"}
-  @user2 %{username: "Will Smith"}
-  @user3 %{username: "Aa"}
-  @user4 %{username: "Zz"}
-  @user5 %{username: "Crudry"}
+  @user %{username: "Chuck Norris", age: 60}
+  @user2 %{username: "Will Smith", age: 60}
+  @user3 %{username: "Aa", age: 40}
+  @user4 %{username: "Zz", age: 66}
+  @user5 %{username: "Crudry", age: 3}
 
   defmodule UserContext do
     require Crudry.Context
@@ -46,6 +46,11 @@ defmodule CrudryQueryTest do
   end
 
   describe "list/2" do
+    setup do
+      UserContext.create_user(@user4)
+      :ok
+    end
+
     test "works with keyword list as parameter" do
       users =
         User
@@ -62,6 +67,54 @@ defmodule CrudryQueryTest do
         |> Repo.all()
 
       assert length(users) == 1
+    end
+
+    test "works with multiple order bys" do
+      pagination_params = %{order_by: [asc: :age, desc: :username]}
+
+      users =
+        User
+        |> Crudry.Query.list(pagination_params)
+        |> Repo.all()
+
+      assert length(users) == 3
+      assert Enum.map(users, & &1.username) == ["Will Smith", "Chuck Norris", "Zz"]
+    end
+
+    test "works with tuples with strings in order by" do
+      pagination_params = %{order_by: [{"desc", "age"}, {"asc", "username"}]}
+
+      users =
+        User
+        |> Crudry.Query.list(pagination_params)
+        |> Repo.all()
+
+      assert length(users) == 3
+      assert Enum.map(users, & &1.username) == ["Zz", "Chuck Norris", "Will Smith"]
+    end
+
+    test "works with simple list in order by" do
+      pagination_params = %{order_by: [:age, :username]}
+
+      users =
+        User
+        |> Crudry.Query.list(pagination_params)
+        |> Repo.all()
+
+      assert length(users) == 3
+      assert Enum.map(users, & &1.username) == ["Chuck Norris", "Will Smith", "Zz"]
+    end
+
+    test "works with simple list of strings in order by" do
+      pagination_params = %{order_by: ["age", "username"]}
+
+      users =
+        User
+        |> Crudry.Query.list(pagination_params)
+        |> Repo.all()
+
+      assert length(users) == 3
+      assert Enum.map(users, & &1.username) == ["Chuck Norris", "Will Smith", "Zz"]
     end
   end
 

@@ -115,8 +115,15 @@ defmodule Crudry.Query do
   defp get_custom_query(initial_query, custom_query), do: custom_query.(initial_query)
 
   defp parse_order_by_args(_, nil), do: []
-  defp parse_order_by_args(_, order_by) when is_list(order_by), do: order_by
-  defp parse_order_by_args(sorting_order, order_by), do: [{sorting_order, to_atom(order_by)}]
+
+  defp parse_order_by_args(sorting_order, orders_by) when is_list(orders_by) do
+    Enum.map(orders_by, fn
+      {sort, order} -> {to_atom(sort), to_atom(order)}
+      order -> {to_atom(sorting_order), to_atom(order)}
+    end)
+  end
+
+  defp parse_order_by_args(sorting_order, order_by), do: parse_order_by_args(sorting_order, List.wrap(order_by))
 
   defp to_atom(value) when is_atom(value), do: value
   defp to_atom(value) when is_binary(value), do: String.to_atom(value)
