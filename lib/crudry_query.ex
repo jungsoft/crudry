@@ -39,6 +39,7 @@ defmodule Crudry.Query do
       Crudry.Query.list(MySchema, %{order_by: ["age", "username"]})
       Crudry.Query.list(MySchema, %{order_by: [:age, :username]})
       Crudry.Query.list(MySchema, %{order_by: [asc: :age, desc: :username]})
+      Crudry.Query.list(MySchema, %{order_by: [%{field: "age", order: :asc}, %{field: "username", order: :desc}]})
       Crudry.Query.list(MySchema, custom_query: &MySchema.scope_list/1)
   """
   def list(initial_query, opts \\ []) do
@@ -121,6 +122,7 @@ defmodule Crudry.Query do
 
   defp parse_order_by_args(sorting_order, orders_by) when is_list(orders_by) do
     Enum.map(orders_by, fn
+      %{order: sort, field: order} -> {to_atom(sort), to_atom(order)}
       {sort, order} -> {to_atom(sort), to_atom(order)}
       order -> {to_atom(sorting_order), to_atom(order)}
     end)
