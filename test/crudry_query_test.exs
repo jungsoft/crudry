@@ -116,6 +116,18 @@ defmodule CrudryQueryTest do
       assert length(users) == 3
       assert Enum.map(users, & &1.username) == ["Chuck Norris", "Will Smith", "Zz"]
     end
+
+    test "works with list of maps in order by" do
+      pagination_params = %{order_by: [%{field: "age", order: :asc}, %{field: "username", order: :desc}]}
+
+      users =
+        User
+        |> Crudry.Query.list(pagination_params)
+        |> Repo.all()
+
+      assert length(users) == 3
+      assert Enum.map(users, & &1.username) == ["Will Smith", "Chuck Norris", "Zz"]
+    end
   end
 
   describe "combinate functions" do
