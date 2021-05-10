@@ -12,6 +12,7 @@ defmodule Crudry.Repo.Migrations.CreateTables do
       add :username, :string
       add :age, :integer
       add :password, :string
+      add :bio, :string
       add :company_id, references(:companies)
 
       timestamps()

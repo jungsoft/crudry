@@ -6,6 +6,7 @@ defmodule Crudry.User do
     field(:username, :string)
     field(:age, :integer)
     field(:password, :string)
+    field(:bio, :string)
 
     belongs_to(:company, Crudry.Company)
     has_many(:posts, Crudry.Post)
@@ -35,7 +36,7 @@ defmodule Crudry.User do
 
   defp base_changeset(user, attrs) do
     user
-    |> cast(attrs, [:username, :age, :password, :company_id])
+    |> cast(attrs, [:username, :age, :password, :bio, :company_id])
     |> validate_required([:username])
     |> validate_length(:username, min: 2)
     |> validate_number(:age, greater_than: 0)
