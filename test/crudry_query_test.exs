@@ -32,16 +32,27 @@ defmodule CrudryQueryTest do
 
       # Since we first filtered out all users that don't have @user.username,
       # the search for @user2.username shouldn't find anything
-      assert length(users) == 0
+      assert 0 == length(users)
     end
 
     test "ignores search term when it is nil" do
-      users =
-        User
-        |> Crudry.Query.search(nil, [:username])
-        |> Repo.all()
+      initial_query = User
+      query = Crudry.Query.search(initial_query, nil, [:username])
 
-      assert length(users) == 2
+      users = Repo.all(query)
+
+      assert initial_query == query
+      assert 2 == length(users)
+    end
+
+    test "ignores search term when it is empty string" do
+      initial_query = User
+      query = Crudry.Query.search(initial_query, "", [:username])
+
+      users = Repo.all(query)
+
+      assert initial_query == query
+      assert 2 == length(users)
     end
   end
 
