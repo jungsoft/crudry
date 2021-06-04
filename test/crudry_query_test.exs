@@ -3,8 +3,8 @@ defmodule CrudryQueryTest do
 
   alias Crudry.{Repo, User}
 
-  @user %{username: "Chuck Norris", age: 60}
-  @user2 %{username: "Will Smith", age: 60}
+  @user %{username: "Chuck Norris", age: 60, bio: "user bio"}
+  @user2 %{username: "Will Smith", age: 60, bio: nil}
   @user3 %{username: "Aa", age: 40}
   @user4 %{username: "Zz", age: 66}
   @user5 %{username: "Crudry", age: 3}
@@ -32,16 +32,27 @@ defmodule CrudryQueryTest do
 
       # Since we first filtered out all users that don't have @user.username,
       # the search for @user2.username shouldn't find anything
-      assert length(users) == 0
+      assert 0 == length(users)
     end
 
     test "ignores search term when it is nil" do
-      users =
-        User
-        |> Crudry.Query.search(nil, [:username])
-        |> Repo.all()
+      initial_query = User
+      query = Crudry.Query.search(initial_query, nil, [:bio])
 
-      assert length(users) == 2
+      users = Repo.all(query)
+
+      assert initial_query == query
+      assert 2 == length(users)
+    end
+
+    test "ignores search term when it is empty string" do
+      initial_query = User
+      query = Crudry.Query.search(initial_query, "", [:bio])
+
+      users = Repo.all(query)
+
+      assert initial_query == query
+      assert 2 == length(users)
     end
   end
 
