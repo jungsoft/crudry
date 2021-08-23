@@ -1,4 +1,4 @@
-# Crudry
+![Crudry](img/crudry.svg)
 
 [![Coverage Status](https://coveralls.io/repos/github/jungsoft/crudry/badge.svg?branch=master)](https://coveralls.io/github/jungsoft/crudry?branch=master)
 
