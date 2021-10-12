@@ -82,7 +82,7 @@ def middleware(middleware, _field, _object) do
 end
 ```
 
-`Cudry.Translator` is used by default to translate error messages to the default locale `en`. You can also use your own Gettext module by adding it to your Absinthe's schema `context/1` function:
+`Crudry.Translator` is used by default to translate error messages to the default locale `en`. You can also use your own Gettext module by adding it to your Absinthe's schema `context/1` function:
 
 ```elixir
 def context(context) do

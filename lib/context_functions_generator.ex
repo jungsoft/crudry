@@ -13,13 +13,19 @@ defmodule ContextFunctionsGenerator do
   def generate_function(:get, name, _pluralized_name, module, opts) do
     quote do
       def unquote(:"get_#{name}")(id, repo_opts \\ []) do
+        assocs = repo_opts[:assocs] || []
+
         unquote(module)
         |> unquote(get_repo_module(opts)).get(id, repo_opts)
+        |> unquote(get_repo_module(opts)).preload(assocs)
       end
 
       def unquote(:"get_#{name}_by")(clauses, repo_opts \\ []) do
+        assocs = repo_opts[:assocs] || []
+
         unquote(module)
         |> unquote(get_repo_module(opts)).get_by(clauses, repo_opts)
+        |> unquote(get_repo_module(opts)).preload(assocs)
       end
 
       def unquote(:"get_#{name}_with_assocs")(id, assocs, repo_opts \\ []) do
@@ -35,13 +41,19 @@ defmodule ContextFunctionsGenerator do
       end
 
       def unquote(:"get_#{name}!")(id, repo_opts \\ []) do
+        assocs = repo_opts[:assocs] || []
+
         unquote(module)
         |> unquote(get_repo_module(opts)).get!(id, repo_opts)
+        |> unquote(get_repo_module(opts)).preload(assocs)
       end
 
       def unquote(:"get_#{name}_by!")(clauses, repo_opts \\ []) do
+        assocs = repo_opts[:assocs] || []
+
         unquote(module)
         |> unquote(get_repo_module(opts)).get_by!(clauses, repo_opts)
+        |> unquote(get_repo_module(opts)).preload(assocs)
       end
 
       def unquote(:"get_#{name}_with_assocs!")(id, assocs, repo_opts \\ []) do
