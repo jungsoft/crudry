@@ -29,40 +29,60 @@ defmodule Crudry.Context do
 
         ## Get functions
 
-        def get_my_schema(id) do
-          Repo.get(MySchema, id)
+        def get_my_schema(id, opts \\\\ []) do
+          assocs = opts[:assoc] || []
+
+          MySchema
+          |> Repo.get(id)
+          |> Repo.preload(assocs)
         end
 
-        def get_my_schema!(id) do
-          Repo.get!(MySchema, id)
+        def get_my_schema!(id, opts \\\\ []) do
+          assocs = opts[:assoc] || []
+
+          MySchema
+          |> Repo.get!(id)
+          |> Repo.preload(assocs)
         end
 
+        @deprecated "Use get_schema/2 instead"
         def get_my_schema_with_assocs(id, assocs) do
           MySchema
           |> Repo.get(id)
           |> Repo.preload(assocs)
         end
 
+        @deprecated "Use get_schema!/2 instead"
         def get_my_schema_with_assocs!(id, assocs) do
           MySchema
           |> Repo.get!(id)
           |> Repo.preload(assocs)
         end
 
-        def get_my_schema_by(clauses) do
-          Repo.get_by(MySchema, clauses)
+        def get_my_schema_by(clauses, opts \\\\ []) do
+          assocs = opts[:assoc] || []
+
+          MySchema
+          |> Repo.get_by(clauses)
+          |> Repo.preload(assocs)
         end
 
-        def get_my_schema_by!(clauses) do
-          Repo.get_by!(MySchema, clauses)
+        def get_my_schema_by!(clauses, opts \\\\ []) do
+          assocs = opts[:assoc] || []
+
+          MySchema
+          |> Repo.get_by!(clauses)
+          |> Repo.preload(assocs)
         end
 
+        @deprecated "Use get_my_schema_by/2 instead"
         def get_my_schema_by_with_assocs(clauses, assocs) do
           MySchema
           |> Repo.get_by(clauses)
           |> Repo.preload(assocs)
         end
 
+        @deprecated "Use get_my_schema_by!/2 instead"
         def get_my_schema_by_with_assocs!(clauses, assocs) do
           MySchema
           |> Repo.get_by!(clauses)

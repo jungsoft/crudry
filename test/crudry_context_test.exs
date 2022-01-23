@@ -80,6 +80,18 @@ defmodule CrudryContextTest do
       end
     end
 
+    test "get/2", %{user1: user1} do
+      assert UserContext.get_user(user1.id, [assocs: :posts]) == Repo.preload(user1, :posts)
+    end
+
+    test "get!/2", %{user1: user1} do
+      assert UserContext.get_user!(user1.id, [assocs: :posts]) == Repo.preload(user1, :posts)
+
+      assert_raise Ecto.NoResultsError, fn ->
+        UserContext.get_user!(-1, [:posts])
+      end
+    end
+
     test "get_by/1", %{user1: user1} do
       assert UserContext.get_user_by(username: user1.username) == user1
       assert UserContext.get_user_by(username: "inexistent") == nil
@@ -89,6 +101,18 @@ defmodule CrudryContextTest do
       assert UserContext.get_user_by!(username: user1.username) == user1
       assert_raise Ecto.NoResultsError, fn ->
         UserContext.get_user_by!(username: "inexistent")
+      end
+    end
+
+    test "get_by/2", %{user1: user1} do
+      assert UserContext.get_user_by([username: user1.username], [assocs: :posts]) == Repo.preload(user1, :posts)
+    end
+
+    test "get_by!/2", %{user1: user1} do
+      assert UserContext.get_user_by!([username: user1.username], [assocs: :posts]) == Repo.preload(user1, :posts)
+
+      assert_raise Ecto.NoResultsError, fn ->
+        UserContext.get_user_by!([username: "inexistent"], [:posts])
       end
     end
 
@@ -155,7 +179,7 @@ defmodule CrudryContextTest do
       end
 
       assert {:ok, %{} = user} = ContextDelete.create_user(@user)
-      assert {:ok, %{} = post} = ContextDelete.create_post(%{title: @post.title, user_id: user.id})
+      assert {:ok, %{} = _post} = ContextDelete.create_post(%{title: @post.title, user_id: user.id})
       assert {:error, %Ecto.Changeset{}} = ContextDelete.delete_user(user)
     end
 

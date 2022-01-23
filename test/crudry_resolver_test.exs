@@ -86,7 +86,7 @@ defmodule CrudryResolverTest do
     end
 
     test "create/2" do
-      assert {:ok, %User{id: id, username: @username} = user} = Resolver.create_user(@userparams, @info)
+      assert {:ok, %User{id: _id, username: @username} = _user} = Resolver.create_user(@userparams, @info)
     end
 
     test "list/2", %{user: user} do
