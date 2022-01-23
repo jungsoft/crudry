@@ -10,6 +10,16 @@ defmodule ContextFunctionsGenerator do
     end
   end
 
+  def generate_function(:exists, name, _pluralized_name, module, opts) do
+    quote do
+      def unquote(:"#{name}_exists?")(id) do
+        Ecto.Query.from(m in unquote(module))
+        |> Ecto.Query.where([m], m.id == ^id)
+        |> unquote(get_repo_module(opts)).exists?()
+      end
+    end
+  end
+
   def generate_function(:get, name, _pluralized_name, module, opts) do
     quote do
       def unquote(:"get_#{name}")(id, opts \\ []) do

@@ -27,6 +27,14 @@ defmodule Crudry.Context do
         alias MyApp.MySchema
         require Crudry.Context
 
+        ## Exists functions
+
+        def my_schema_exists?(id) do
+          from(m in MySchema)
+          |> where([m], m.id == ^id)
+          |> Repo.exists?()
+        end
+
         ## Get functions
 
         def get_my_schema(id, opts \\\\ []) do
@@ -198,7 +206,7 @@ defmodule Crudry.Context do
       end
   """
 
-  @all_functions ~w(get list count search filter create update delete)a
+  @all_functions ~w(exists get list count search filter create update delete)a
   # Always generate helper functions since they are used in the other generated functions
   @helper_functions ~w(check_assocs)a
 

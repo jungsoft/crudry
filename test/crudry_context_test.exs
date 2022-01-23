@@ -2,6 +2,8 @@ defmodule CrudryContextTest do
   use ExUnit.Case
   doctest Crudry.Context
 
+  require Ecto.Query
+
   alias Crudry.Repo
   alias Crudry.{Post, User}
 
@@ -66,6 +68,11 @@ defmodule CrudryContextTest do
 
     test "count/1" do
       assert UserContext.count_users(:id) == 3
+    end
+
+    test "exists?/1", %{user1: user1} do
+      assert UserContext.user_exists?(user1.id) == true
+      assert UserContext.user_exists?(-1) == false
     end
 
     test "get/1", %{user1: user1} do
@@ -265,15 +272,17 @@ defmodule CrudryContextTest do
       assert Enum.member?(ContextOnly.__info__(:functions), {:list_users, 1})
       assert Enum.member?(ContextOnly.__info__(:functions), {:list_users_with_assocs, 1})
       assert Enum.member?(ContextOnly.__info__(:functions), {:list_users_with_assocs, 2})
+      refute Enum.member?(ContextOnly.__info__(:functions), {:user_exists?, 1})
       refute Enum.member?(ContextOnly.__info__(:functions), {:get_user, 1})
     end
 
     test "using except" do
       defmodule ContextExcept do
-        Crudry.Context.generate_functions(Crudry.User, except: [:get, :update, :list, :delete])
+        Crudry.Context.generate_functions(Crudry.User, except: [:exists, :get, :update, :list, :delete])
       end
 
       assert Enum.member?(ContextExcept.__info__(:functions), {:create_user, 1})
+      refute Enum.member?(ContextExcept.__info__(:functions), {:user_exists?, 1})
       refute Enum.member?(ContextExcept.__info__(:functions), {:get_user, 1})
       refute Enum.member?(ContextExcept.__info__(:functions), {:delete_user, 1})
     end
@@ -289,6 +298,7 @@ defmodule CrudryContextTest do
       assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:list_users, 1})
       assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:list_users_with_assocs, 1})
       assert Enum.member?(ContextOnlyDefault.__info__(:functions), {:list_users_with_assocs, 2})
+      refute Enum.member?(ContextOnlyDefault.__info__(:functions), {:user_exists?, 1})
       refute Enum.member?(ContextOnlyDefault.__info__(:functions), {:get_user, 1})
     end
 
@@ -299,6 +309,7 @@ defmodule CrudryContextTest do
       end
 
       assert Enum.member?(ContextExceptDefault.__info__(:functions), {:create_user, 1})
+      assert Enum.member?(ContextExceptDefault.__info__(:functions), {:user_exists?, 1})
       refute Enum.member?(ContextExceptDefault.__info__(:functions), {:get_user, 1})
       refute Enum.member?(ContextExceptDefault.__info__(:functions), {:delete_user, 1})
     end
