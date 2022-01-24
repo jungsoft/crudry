@@ -2,8 +2,6 @@ defmodule CrudryContextTest do
   use ExUnit.Case
   doctest Crudry.Context
 
-  require Ecto.Query
-
   alias Crudry.Repo
   alias Crudry.{Post, User}
 

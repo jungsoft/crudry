@@ -1,8 +1,6 @@
 defmodule CrudryQueryTest do
   use ExUnit.Case
 
-  require Ecto.Query
-
   alias Crudry.{Repo, User}
 
   @user %{username: "Chuck Norris", age: 60, bio: "user bio"}

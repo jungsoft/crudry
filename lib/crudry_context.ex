@@ -30,9 +30,11 @@ defmodule Crudry.Context do
         ## Exists functions
 
         def my_schema_exists?(id) do
-          from(m in MySchema)
-          |> where([m], m.id == ^id)
-          |> Repo.exists?()
+          import Ecto.Query, only: [from: 2]
+
+          query = from(x in MySchema, where: x.id == ^id)
+
+          Repo.exists?(query)
         end
 
         ## Get functions
