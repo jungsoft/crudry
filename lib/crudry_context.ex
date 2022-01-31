@@ -138,8 +138,16 @@ defmodule Crudry.Context do
           |> Repo.all()
         end
 
-        def count_my_schemas(field \\\\ :id) do
-          Repo.aggregate(MySchema, :count, field)
+        def count_my_schemas(opts \\\\ []) do
+          field = opts[:field] || :id
+          search = opts[:search]
+          search_fields = opts[:search_fields] || []
+          filters = opts[:filters] || %{}
+
+          MySchema
+          |> Crudry.Query.search(search, search_fields)
+          |> Crudry.Query.filter(filters)
+          |> Repo.aggregate(:count, field)
         end
 
         ## Create functions
