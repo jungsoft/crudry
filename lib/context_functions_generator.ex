@@ -105,8 +105,15 @@ defmodule ContextFunctionsGenerator do
 
   def generate_function(:count, _name, pluralized_name, module, opts) do
     quote do
-      def unquote(:"count_#{pluralized_name}")(field \\ :id, repo_opts \\ []) do
+      def unquote(:"count_#{pluralized_name}")(opts \\ [], repo_opts \\ []) do
+        field = opts[:field] || :id
+        search = opts[:search]
+        search_fields = opts[:search_fields] || []
+        filters = opts[:filters] || %{}
+
         unquote(module)
+        |> Crudry.Query.search(search, search_fields)
+        |> Crudry.Query.filter(filters)
         |> unquote(get_repo_module(opts)).aggregate(:count, field, repo_opts)
       end
     end

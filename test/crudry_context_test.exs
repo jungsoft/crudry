@@ -5,9 +5,10 @@ defmodule CrudryContextTest do
   alias Crudry.Repo
   alias Crudry.{Post, User}
 
-  @user %{username: "Chuck Norris"}
-  @user2 %{username: "Will Smith"}
+  @user %{username: "Chuck Norris", age: 81}
+  @user2 %{username: "Will Smith", age: 53}
   @user3 %{username: "Sylvester Stallone"}
+  @user4 %{username: "Will Ferrell", age: 54}
   @post %{title: "Chuck Norris threw a grenade and killed 50 people, then it exploded."}
 
   setup do
@@ -25,8 +26,9 @@ defmodule CrudryContextTest do
       assert {:ok, %{} = user1} = Repo.insert(User.changeset(%User{}, @user))
       assert {:ok, %{} = user2} = Repo.insert(User.changeset(%User{}, @user2))
       assert {:ok, %{} = user3} = Repo.insert(User.changeset(%User{}, @user3))
+      assert {:ok, %{} = user4} = Repo.insert(User.changeset(%User{}, @user4))
       assert {:ok, %{} = post} = Repo.insert(Post.changeset(%Post{}, %{title: "title", user_id: user1.id}))
-      %{user1: user1, user2: user2, user3: user3, post: post}
+      %{user1: user1, user2: user2, user3: user3, user4: user4, post: post}
     end
 
     test "create/1" do
@@ -39,12 +41,12 @@ defmodule CrudryContextTest do
       assert %Crudry.User{username: ^username} = UserContext.create_user!(@user)
     end
 
-    test "list/0", %{user1: user1, user2: user2, user3: user3} do
-      assert UserContext.list_users() == [user1, user2, user3]
+    test "list/0", %{user1: user1, user2: user2, user3: user3, user4: user4} do
+      assert UserContext.list_users() == [user1, user2, user3, user4]
     end
 
-    test "list_with_assocs/1", %{user1: user1, user2: user2, user3: user3} do
-      assert UserContext.list_users_with_assocs(:posts) == Repo.preload([user1, user2, user3], :posts)
+    test "list_with_assocs/1", %{user1: user1, user2: user2, user3: user3, user4: user4} do
+      assert UserContext.list_users_with_assocs(:posts) == Repo.preload([user1, user2, user3, user4], :posts)
     end
 
     test "list/1", %{user1: user1} do
@@ -64,8 +66,22 @@ defmodule CrudryContextTest do
       assert UserContext.filter_users(%{username: @user3.username}) == [user3]
     end
 
-    test "count/1" do
-      assert UserContext.count_users(:id) == 3
+    test "count/1", %{user2: user2} do
+      assert UserContext.count_users() == 4
+      assert UserContext.count_users(field: :age) == 3
+
+      opts_search = [search: "Will", search_fields: [:username]]
+      assert UserContext.count_users(opts_search) == 2
+
+      opts_filters = [filters: %{id: user2.id}]
+      assert UserContext.count_users(opts_filters) == 1
+
+      opts_search_with_filters = [
+        filters: %{age: user2.age},
+        search: "Will",
+        search_fields: [:username],
+      ]
+      assert UserContext.count_users(opts_search_with_filters) == 1
     end
 
     test "exists?/1", %{user1: user1} do
